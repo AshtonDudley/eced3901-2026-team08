@@ -1,1 +1,20 @@
 /.obsidian
+#-----------------------------------
+# SolidWorks Temporary and Backup Files
+#-----------------------------------
+*.SLDASM~
+*.SLDPRT~
+*.SLDDRW~
+*.BAK
+*.SWP
+*.log
+
+#-----------------------------------
+# SolidWorks Configuration and Cache Files
+#-----------------------------------
+*.temp
+*.tmp
+*.SLDREG
+*.ldb
+~$*
+*~
