@@ -186,7 +186,7 @@ class SquareRoutine : public rclcpp::Node
 	rclcpp::TimerBase::SharedPtr timer_;
 	
 	// Declaration of Class Variables
-	double x_vel = 0.1, th_vel = 0.1;
+	double x_vel = 0.5, th_vel = 0.5;
 	double x_now = 0, x_init = 0, y_now = 0, y_init = 0, th_now = 0, th_init = 0;
 	double d_now = 0, d_aim = 0, th_aim = 0;
 	double q_x = 0, q_y = 0, q_z = 0, q_w = 0; 
