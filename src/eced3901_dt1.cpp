@@ -99,6 +99,9 @@ class SquareRoutine : public rclcpp::Node
 			msg.linear.x = 0; //double(rand())/double(RAND_MAX); //fun
 			msg.angular.z = 0; //2*double(rand())/double(RAND_MAX) - 1; //fun
 			publisher_->publish(msg);
+			msg.linear.x = 0; //double(rand())/double(RAND_MAX); //fun
+			msg.angular.z = 0; //2*double(rand())/double(RAND_MAX) - 1; //fun
+			publisher_->publish(msg);
 			last_state_complete = 1;
 		}
 
@@ -119,22 +122,22 @@ class SquareRoutine : public rclcpp::Node
 			    move_distance(0.95); //move the robot forwards
 			    break;
 			  case 1:
-			    turn_angle(M_PI/2);  //turn the robot
+			    turn_angle(M_PI/2.05);  //turn the robot
 			    break;
 			  case 2:
-			    move_distance(0.9);  //second movement for the robot
+			    move_distance(0.95);  //second movement for the robot
 			    break;
 			  case 3:
 			    turn_angle(M_PI/2.05); //turn the robot again
 			    break;
 			  case 4:
-			    move_distance(0.9);  //third movement for the robot
+			    move_distance(0.95);  //third movement for the robot
 			    break;			    
 			  case 5:
 			    turn_angle(M_PI/2.05);  //final turn
 			    break;
 			  case 6:
-			    move_distance(0.9); //last movement for the robot
+			    move_distance(0.95); //last movement for the robot
 			    break;			    
 			  case 7:
 			    turn_angle(M_PI/2.05);  //re-orient the robot
