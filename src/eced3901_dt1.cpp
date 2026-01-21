@@ -122,7 +122,7 @@ class SquareRoutine : public rclcpp::Node
 			    turn_angle(M_PI/2.05);  //turn to avoid wall
 			    break;
 			  case 2:
-			    move_distance(0.50);  //second movement for the robot
+			    move_distance(0.40);  //second movement for the robot
 			    break;
 			  case 3:
 			    turn_angle(M_PI/2.05); //turn the robot again
@@ -146,7 +146,7 @@ class SquareRoutine : public rclcpp::Node
 				turn_angle(M_PI/2.05);
 			    break;
 			  case 10:
-			    move_distance(0.50); //drive past wall
+			    move_distance(0.40); //drive past wall
 			    break;			    
 			  case 11:
 			    turn_angle(M_PI/2.05);  //turn towards cargo
