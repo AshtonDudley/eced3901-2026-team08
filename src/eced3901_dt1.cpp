@@ -116,28 +116,28 @@ class SquareRoutine : public rclcpp::Node
 			switch(count_) 
 			{
 			  case 0:
-			    move_distance(0.9);
+			    move_distance(0.95); //move the robot forwards
 			    break;
 			  case 1:
-			    turn_angle(M_PI/2);		    
+			    turn_angle(M_PI/2);  //turn the robot
 			    break;
 			  case 2:
-			    move_distance(0.9);
+			    move_distance(0.9);  //second movement for the robot
 			    break;
 			  case 3:
-			    turn_angle(M_PI/2);		    
+			    turn_angle(M_PI/2.05); //turn the robot again
 			    break;
 			  case 4:
-			    move_distance(0.9);
+			    move_distance(0.9);  //third movement for the robot
 			    break;			    
 			  case 5:
-			    turn_angle(M_PI/2);		    
+			    turn_angle(M_PI/2);  //final turn
 			    break;
 			  case 6:
-			    move_distance(0.9);
+			    move_distance(0.9); //last movement for the robot
 			    break;			    
 			  case 7:
-			    turn_angle(M_PI/2);		    
+			    turn_angle(M_PI/2);  //re-orient the robot
 			    break;  
 			  default:
 			    break;
