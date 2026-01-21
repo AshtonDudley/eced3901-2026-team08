@@ -21,7 +21,7 @@ find_package(tf2 REQUIRED)
 add_executable(talker src/publisher_member_function.cpp)
 ament_target_dependencies(talker rclcpp std_msgs)
 
-add_executable(dt1 src/nav_testing.cpp)
+add_executable(dt1 src/eced3901_dt1.cpp)
 ament_target_dependencies(dt1 rclcpp std_msgs nav_msgs geometry_msgs tf2)
 
 
