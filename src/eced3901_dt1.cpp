@@ -99,9 +99,6 @@ class SquareRoutine : public rclcpp::Node
 			msg.linear.x = 0; //double(rand())/double(RAND_MAX); //fun
 			msg.angular.z = 0; //2*double(rand())/double(RAND_MAX) - 1; //fun
 			publisher_->publish(msg);
-			msg.linear.x = 0; //double(rand())/double(RAND_MAX); //fun
-			msg.angular.z = 0; //2*double(rand())/double(RAND_MAX) - 1; //fun
-			publisher_->publish(msg);
 			last_state_complete = 1;
 		}
 
