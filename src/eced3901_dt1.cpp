@@ -76,9 +76,10 @@ class SquareRoutine : public rclcpp::Node
 		d_now =	pow( pow(x_now - x_init, 2) + pow(y_now - y_init, 2), 0.5 );
 		
 		// Calculate angle travelled from initial
-        yaw_prev = yaw;
-        yaw_unwrapped = yaw;
-        yaw_init = true;
+        if (!yaw_init) {
+            yaw_prev = yaw;
+            yaw_unwrapped = yaw;
+            yaw_init = true;
         } else {
             double dy = wrap_angle(yaw - yaw_prev);   // small step in [-pi, pi]
             yaw_unwrapped += dy;                      // accumulate continuously
