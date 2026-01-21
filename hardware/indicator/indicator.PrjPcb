@@ -50,7 +50,7 @@ PrefsVaultGUID=
 PrefsRevisionGUID=
 
 [Document1]
-DocumentPath=..\..\..\eced3901\Design_PCBs\LED.SchDoc
+DocumentPath=LED.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -67,7 +67,7 @@ GenerateClassCluster=0
 DocumentUniqueId=CUQPXGXT
 
 [Document2]
-DocumentPath=..\..\..\eced3901\Design_PCBs\LED.PcbDoc
+DocumentPath=LED.PcbDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
