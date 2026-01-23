@@ -1,8 +1,8 @@
 /*
-Code for DT1
-V. Sieben
-Version 1.0
-Date: Feb 4, 2023
+Code for DT1 - Edited to navigate maze
+V. Sieben && Megan Neville
+Version 1.1
+Date: Jan 23, 2026
 License: GNU GPLv3
 */
 
