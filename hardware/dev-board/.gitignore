@@ -16,12 +16,12 @@ obj/
 # =========================
 # IDE / OS junk
 # =========================
-.vscode/
 .idea/
 *.swp
 *.log
 .DS_Store
 Thumbs.db
+.vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
 
