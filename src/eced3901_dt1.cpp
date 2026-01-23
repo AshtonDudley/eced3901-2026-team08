@@ -153,6 +153,51 @@ class SquareRoutine : public rclcpp::Node
 			    break;  
               case 12:
                 move_distance(1.2); //at cargo?
+			  case 13: //start truning around
+			    turn_angle(M_PI/2.05); //turn the robot again
+				break;			  
+			  case 14:
+			    turn_angle(M_PI/2.05); //robot did 180
+				break;
+			  case 15:
+			    move_distance(1.2);
+				break;
+			  case 16:
+				turn_angle(M_PI/2.05);
+				break;
+			  case 17:
+				turn_angle(M_PI/2.05);
+				break;
+			  case 18:
+				turn_angle(M_PI/2.05); //should be facing correct direction
+				break;
+			  case 19:
+			    move_distance(0.4);
+				break;
+			  case 20:
+			    turn_angle(M_PI/2.05);
+				break;
+			  case 21:
+			    move_distance(1.0);
+				break:
+			  case 22:
+			    turn_angle(M_PI/2.05);
+				break;
+			  case 23:
+			    move_distance(0.4);
+			    break:
+			  case 24:
+			    turn_angle(M_PI/2.05);
+			    break;
+			  case 24:
+			    turn_angle(M_PI/2.05);
+			    break:
+			  case 26:
+			    turn_angle(M_PI/2.05);
+			    break;
+			  case 27:
+			    move_distance(1.1); //should be back at start?
+				break;
 			  default:
 			    break;
 			}
@@ -200,7 +245,7 @@ class SquareRoutine : public rclcpp::Node
 	rclcpp::TimerBase::SharedPtr timer_;
 	
 	// Declaration of Class Variables
-	double x_vel = 0.5, th_vel = 0.5; //turn velocity
+	double x_vel = 0.2, th_vel = 0.1; //turn velocity
 	double x_now = 0, x_init = 0, y_now = 0, y_init = 0, th_now = 0, th_init = 0;
 	double d_now = 0, d_aim = 0, th_aim = 0;
 	double q_x = 0, q_y = 0, q_z = 0, q_w = 0; 
