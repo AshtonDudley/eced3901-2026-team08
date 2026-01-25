@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug (ST-LINK GDB Server)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "servertype": "stlink",
+
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/dev-board.elf",
+      "device": "STM32G4xx",
+
+      "serverpath": "C:/ST/STM32CubeCLT_1.15.1/STLink-gdb-server/bin/ST-LINK_gdbserver.exe",
+      "stm32cubeprogrammer": "C:/ST/STM32CubeCLT_1.15.1/STM32CubeProgrammer/bin",
+
+      "serverArgs": [
+        "-l", "1",
+        "-s"
+      ],
+
+      "runToEntryPoint": "main",
+      "showDevDebugOutput": "raw",
+      "preLaunchTask": "cmake: build"
+    }
+  ]
+}
