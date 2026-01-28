@@ -192,22 +192,32 @@ class SquareRoutine : public rclcpp::Node
 	}
 	
 	// Set the initial angle as where robot is heading and put new th_aim in place			
-	void turn_left(double angle)
+	double normalizeAngle(double a)
 	{
-		th_aim = angle;
-		th_init = th_now;
-		count_++;		// advance state counter
-		last_state_complete = 0;	
+		while (a > M_PI)  a -= 2*M_PI;
+		while (a < -M_PI) a += 2*M_PI;
+		return a;
 	}
 
+	// Turn left by "angle" radians (CCW)
+	void turn_left(double angle)
+	{
+		th_init = th_now;
+		th_aim  = normalizeAngle(th_now + angle);
+
+		count_++;
+		last_state_complete = 0;
+	}
+
+	// Turn right by "angle" radians (CW)
 	void turn_right(double angle)
 	{
 		th_init = th_now;
-		th_aim  = th_now - angle; 
-		count_++; 
+		th_aim  = normalizeAngle(th_now - angle);
+
+		count_++;
 		last_state_complete = 0;
 	}
-	
 	// Handle angle wrapping
     	double wrap_angle(double angle)
     	{
