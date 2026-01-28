@@ -141,37 +141,38 @@ class SquareRoutine : public rclcpp::Node
 			    break;  
               case 8:
                 move_distance(1.2); //at cargo?
-			  case 13: //start truning around
+				break;
+			  case 9: //start truning around
 			    turn_left(M_PI/2.05); //turn the robot again
 				break;			  
-			  case 9:
+			  case 10:
 			    turn_left(M_PI/2.05); //robot did 180
 				break;
-			  case 10:
+			  case 11:
 			    move_distance(1.2);
 				break;
-			  case 11:
+			  case 12:
 				turn_right(M_PI/2.05); //should be facing correct direction
 				break;
-			  case 12:
-			    move_distance(0.4);
-				break;
 			  case 13:
-			    turn_left(M_PI/2.05);
+			    move_distance(0.4);
 				break;
 			  case 14:
-			    move_distance(1.0);
-				break;
-			  case 15:
 			    turn_left(M_PI/2.05);
 				break;
+			  case 15:
+			    move_distance(1.0);
+				break;
 			  case 16:
+			    turn_left(M_PI/2.05);
+				break;
+			  case 17:
 			    move_distance(0.4);
 			    break;
-			  case 17:
+			  case 18:
 			    turn_right(M_PI/2.05);
 			    break;
-			  case 18:
+			  case 19:
 			    move_distance(1.1); //should be back at start?
 				break;
 			  default:
