@@ -116,86 +116,62 @@ class SquareRoutine : public rclcpp::Node
 			switch(count_) 
 			{
 			  case 0:
-			    move_distance(1.1); //move the robot forwards
+			    move_distance(1.2); //move the robot forwards
 			    break;
 			  case 1:
-			    turn_angle(M_PI/2.05);  //turn to avoid wall
+			    nav_left(M_PI/2.05);  //turn to avoid wall
 			    break;
 			  case 2:
 			    move_distance(0.40);  //second movement for the robot
 			    break;
 			  case 3:
-			    turn_angle(M_PI/2.05); //turn the robot again
-				break;
-			  case 4:
-				turn_angle(M_PI/2.05);
-				break;
-			  case 5:
-				turn_angle(M_PI/2.05);
+			    nav_right(M_PI/2.05); //turn the robot again
 			    break;
-			  case 6:
+			  case 4:
 			    move_distance(1.0);  //drive toward obstacle
 			    break;			    
-			  case 7:
-			    turn_angle(M_PI/2.05); //turn the robot again
-				break;
-			  case 8:
-				turn_angle(M_PI/2.05);
-				break;
-			  case 9:
-				turn_angle(M_PI/2.05);
+			  case 5:
+			    nav_right(M_PI/2.05); //turn the robot again
 			    break;
-			  case 10:
+			  case 6:
 			    move_distance(0.40); //drive past wall
 			    break;			    
-			  case 11:
-			    turn_angle(M_PI/2.05);  //turn towards cargo
+			  case 7:
+			    nav_left(M_PI/2.05);  //turn towards cargo
 			    break;  
-              case 12:
+              case 8:
                 move_distance(1.2); //at cargo?
 			  case 13: //start truning around
-			    turn_angle(M_PI/2.05); //turn the robot again
+			    nav_left(M_PI/2.05); //turn the robot again
 				break;			  
-			  case 14:
-			    turn_angle(M_PI/2.05); //robot did 180
+			  case 9:
+			    nav_left(M_PI/2.05); //robot did 180
 				break;
-			  case 15:
+			  case 10:
 			    move_distance(1.2);
 				break;
-			  case 16:
-				turn_angle(M_PI/2.05);
+			  case 11:
+				nav_right(M_PI/2.05); //should be facing correct direction
 				break;
-			  case 17:
-				turn_angle(M_PI/2.05);
-				break;
-			  case 18:
-				turn_angle(M_PI/2.05); //should be facing correct direction
-				break;
-			  case 19:
+			  case 12:
 			    move_distance(0.4);
 				break;
-			  case 20:
-			    turn_angle(M_PI/2.05);
+			  case 13:
+			    nav_left(M_PI/2.05);
 				break;
-			  case 21:
+			  case 14:
 			    move_distance(1.0);
 				break;
-			  case 22:
-			    turn_angle(M_PI/2.05);
+			  case 15:
+			    nav_left(M_PI/2.05);
 				break;
-			  case 23:
+			  case 16:
 			    move_distance(0.4);
 			    break;
-			  case 24:
-			    turn_angle(M_PI/2.05);
+			  case 17:
+			    nav_right(M_PI/2.05);
 			    break;
-			  case 25:
-			    turn_angle(M_PI/2.05);
-			    break;
-			  case 26:
-			    turn_angle(M_PI/2.05);
-			    break;
-			  case 27:
+			  case 18:
 			    move_distance(1.1); //should be back at start?
 				break;
 			  default:
@@ -215,12 +191,20 @@ class SquareRoutine : public rclcpp::Node
 	}
 	
 	// Set the initial angle as where robot is heading and put new th_aim in place			
-	void turn_angle(double angle)
+	void turn_left(double angle)
 	{
 		th_aim = angle;
 		th_init = th_now;
 		count_++;		// advance state counter
 		last_state_complete = 0;	
+	}
+
+	void turn_right(double angle)
+	{
+		th_init = th_now;
+		th_aim  = th_now - angle; 
+		count_++; 
+		last_state_complete = 0;
 	}
 	
 	// Handle angle wrapping
@@ -245,7 +229,7 @@ class SquareRoutine : public rclcpp::Node
 	rclcpp::TimerBase::SharedPtr timer_;
 	
 	// Declaration of Class Variables
-	double x_vel = 0.2, th_vel = 0.1; //turn velocity
+	double x_vel = 0.2, th_vel = 0.2; //turn velocity
 	double x_now = 0, x_init = 0, y_now = 0, y_init = 0, th_now = 0, th_init = 0;
 	double d_now = 0, d_aim = 0, th_aim = 0;
 	double q_x = 0, q_y = 0, q_z = 0, q_w = 0; 
