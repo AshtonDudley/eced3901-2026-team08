@@ -16,7 +16,7 @@ class OdomMeasure : public rclcpp::Node
 {
  public:
     OdomMeasure() : Node("odom_measure"){
-	sub_ = this->create_subscription<nav_msgs::msg:Odometry>(
+	sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
 	    "/odom",10,
 	    std::bind(&OdomMeasure::odomCallback,this,std::placeholders::_1)
 	    );
@@ -53,7 +53,7 @@ class OdomMeasure : public rclcpp::Node
 };
 
 int main(int argc, char **argv){
-    rclcpp::init(argc, argv)
+    rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<OdomMeasure>());
     rclcpp::shutdown();
     return 0;

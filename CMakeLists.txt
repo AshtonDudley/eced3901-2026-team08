@@ -24,7 +24,7 @@ ament_target_dependencies(talker rclcpp std_msgs)
 add_executable(dt1 src/eced3901_dt1.cpp)
 ament_target_dependencies(dt1 rclcpp std_msgs nav_msgs geometry_msgs tf2)
 
-add_executuable(a2 src/a2_angle_monitor.cpp)
+add_executable(a2 src/a2_angle_monitor.cpp)
 ament_target_dependencies(a2 rclcpp nav_msgs tf2)
 
 # Install Cpp executables
