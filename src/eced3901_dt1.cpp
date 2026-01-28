@@ -179,19 +179,19 @@ class SquareRoutine : public rclcpp::Node
 				break;
 			  case 21:
 			    move_distance(1.0);
-				break:
+				break;
 			  case 22:
 			    turn_angle(M_PI/2.05);
 				break;
 			  case 23:
 			    move_distance(0.4);
-			    break:
+			    break;
 			  case 24:
 			    turn_angle(M_PI/2.05);
 			    break;
 			  case 24:
 			    turn_angle(M_PI/2.05);
-			    break:
+			    break;
 			  case 26:
 			    turn_angle(M_PI/2.05);
 			    break;
