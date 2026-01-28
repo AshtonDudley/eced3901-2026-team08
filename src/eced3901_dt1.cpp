@@ -9,7 +9,7 @@ License: GNU GPLv3
 // Include important C++ header files that provide class
 // templates for useful operations.
 #include <chrono>		// Timer functions
-#include <functional>		// Arithmetic, comparisons, and logical operations
+#include <functional>	// Arithmetic, comparisons, and logical operations
 #include <memory>		// Dynamic memory management
 #include <string>		// String functions
 #include <cmath>
@@ -78,19 +78,26 @@ class SquareRoutine : public rclcpp::Node
 		// Calculate angle travelled from initial
 		th_now = yaw;
 		
-		
 		// Keep moving if not reached last distance target
 		if (d_now < d_aim)
 		{
-			msg.linear.x = x_vel; 
+			remaining = d_aim - d_now;
+			ramp = min(1.0, remaining/0.25); //ramp down
+			adjusted_x_vel = x_vel * ramp;
+			msg.linear.x = adjusted_x_vel; 
 			msg.angular.z = 0;
 			publisher_->publish(msg);		
 		}
 		// Keep turning if not reached last angular target		
-		else if ( abs(wrap_angle(th_now - th_init)) < th_aim)
+
+		double angle_diff = wrap_angle(th_target - th_now);
+		else if (abs(angle_diff) > th_tolerance)
 		{
+			remaining = abs(angle_diff);
+			ramp = min(1.0, remaining/(M_PI/8)); //ramp down
+			adjusted_th_vel = th_vel * ramp;
 			msg.linear.x = 0; 
-			msg.angular.z = th_vel;
+			msg.angular.z = adjusted_th_vel;;
 			publisher_->publish(msg);		
 		}		
 		// If done step, stop
@@ -160,6 +167,7 @@ class SquareRoutine : public rclcpp::Node
 	{
 		th_aim = angle;
 		th_init = th_now;
+		th_target = wrap_angle(th_init + angle);
 		count_++;		// advance state counter
 		last_state_complete = 0;	
 	}
@@ -167,7 +175,7 @@ class SquareRoutine : public rclcpp::Node
 	// Handle angle wrapping
     	double wrap_angle(double angle)
     	{
-    	        angle = fmod(angle + M_PI,2*M_PI);
+    	        angle = std::fmod(angle + M_PI,2*M_PI);
         	if (angle <= 0.0)
         	{
            		angle += 2*M_PI;
@@ -187,9 +195,12 @@ class SquareRoutine : public rclcpp::Node
 	
 	// Declaration of Class Variables
 	double x_vel = 0.1, th_vel = 0.2;
+	double adjusted_x_vel = 0, adjusted_th_vel = 0;
+	double th_tolerance = 0.05;
 	double x_now = 0, x_init = 0, y_now = 0, y_init = 0, th_now = 0, th_init = 0;
 	double d_now = 0, d_aim = 0, th_aim = 0;
-	double q_x = 0, q_y = 0, q_z = 0, q_w = 0; 
+	double q_x = 0, q_y = 0, q_z = 0, q_w = 0;
+	double ramp = 0, remaining = 0;
 	size_t count_ = 0;
 	int last_state_complete = 1;
 };
