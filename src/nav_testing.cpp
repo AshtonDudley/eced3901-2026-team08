@@ -141,6 +141,7 @@ class TestRoutine : public rclcpp::Node
 			    break;  
               case 8:
                 move_distance(0.381); //at cargo?
+                break;
 			  default:
 			    break;
 			}
