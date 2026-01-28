@@ -82,20 +82,19 @@ class SquareRoutine : public rclcpp::Node
 		if (d_now < d_aim)
 		{
 			remaining = d_aim - d_now;
-			ramp = std::min(1.0, remaining/0.25); //ramp down
-			adjusted_x_vel = x_vel * ramp;
-			msg.linear.x = adjusted_x_vel; 
-			msg.angular.z = 0;
-			publisher_->publish(msg);		
+			if(remaining > 0.001){
+				ramp = std::min(1.0, remaining/0.25); //ramp down
+				adjusted_x_vel = x_vel * ramp;
+				msg.linear.x = adjusted_x_vel; 
+				msg.angular.z = 0;
+				publisher_->publish(msg);
+			}		
 		}
 		// Keep turning if not reached last angular target		
-		else if (abs(th_aim - th_now) > th_tolerance)
+		else if (abs(wrap_angle(th_now - th_init)) < th_aim)
 		{
-			remaining = abs(th_aim - th_now);
-			ramp = std::min(1.0, remaining/(M_PI/8)); //ramp down
-			adjusted_th_vel = th_vel * ramp;
 			msg.linear.x = 0; 
-			msg.angular.z = adjusted_th_vel;;
+			msg.angular.z = th_vel;
 			publisher_->publish(msg);		
 		}		
 		// If done step, stop
@@ -121,25 +120,25 @@ class SquareRoutine : public rclcpp::Node
 			switch(count_) 
 			{
 			  case 0:
-			    move_distance(1); //move the robot forwards
+			    move_distance(0.95); //move the robot forwards
 			    break;
 			  case 1:
 			    turn_angle(M_PI/2);  //turn the robot
 			    break;
 			  case 2:
-			    move_distance(1);  //second movement for the robot
+			    move_distance(0.95);  //second movement for the robot
 			    break;
 			  case 3:
 			    turn_angle(M_PI/2); //turn the robot again
 			    break;
 			  case 4:
-			    move_distance(1);  //third movement for the robot
+			    move_distance(0.95);  //third movement for the robot
 			    break;			    
 			  case 5:
 			    turn_angle(M_PI/2);  //final turn
 			    break;
 			  case 6:
-			    move_distance(1); //last movement for the robot
+			    move_distance(0.95); //last movement for the robot
 			    break;			    
 			  case 7:
 			    turn_angle(M_PI/2);  //re-orient the robot
@@ -192,8 +191,7 @@ class SquareRoutine : public rclcpp::Node
 	
 	// Declaration of Class Variables
 	double x_vel = 0.1, th_vel = 0.2;
-	double adjusted_x_vel = 0, adjusted_th_vel = 0;
-	double th_tolerance = 0.05;
+	double adjusted_x_vel = 0;
 	double x_now = 0, x_init = 0, y_now = 0, y_init = 0, th_now = 0, th_init = 0;
 	double d_now = 0, d_aim = 0, th_aim = 0;
 	double q_x = 0, q_y = 0, q_z = 0, q_w = 0;
