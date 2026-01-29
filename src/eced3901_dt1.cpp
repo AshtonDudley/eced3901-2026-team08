@@ -208,6 +208,7 @@ class SquareRoutine : public rclcpp::Node
                 0.2f, 
                 t);
 
+
         log_pid_config("pid_yaw_hold", pid_yaw);
 
 		count_++;		// advance state counter
