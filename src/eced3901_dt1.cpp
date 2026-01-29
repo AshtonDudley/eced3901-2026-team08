@@ -94,10 +94,10 @@ class SquareRoutine : public rclcpp::Node
             
             // Use PID to drive distance error to 0
             // setpoint = 0, measurement = -d_err -> error = d_err
-            float v_cmd = pid_step_ms(&pid_lin, 0.0f, (float)(-d_err), t);
-            
+            float v_cmd = step_pid("pid_lin", &pid_lin, 0.0f, (float)(-d_err), t); 
+ 
             // yaw-hold PID
-            float w_cmd = pid_step_ms(&pid_yaw, 0.0f, -(float)yaw_err, t);
+            float w_cmd = step_pid("pid_yaw_hold", &pid_yaw, 0.0f, -(float)yaw_err, t);
 
             log_move_command_debug("move cmd", yaw_err, v_cmd, w_cmd, d_err);
 
@@ -115,8 +115,7 @@ class SquareRoutine : public rclcpp::Node
 
             // error = wrap_angle(th_target - th_now)
             // Drive error -> 0 with PID by using setpoint=0, measurement=error
-            float w_cmd = pid_step_ms(&pid_yaw, 0.0f, -(float)yaw_err, t);
-
+            float w_cmd = step_pid("pid_yaw_turn", &pid_yaw, 0.0f, -(float)yaw_err, t);
             msg.linear.x = 0.0;
             msg.angular.z = (double)w_cmd;
             publisher_->publish(msg);
@@ -263,9 +262,24 @@ class SquareRoutine : public rclcpp::Node
         }
     }
 
+    float step_pid(const char *label, PID *pid, float setpoint, float measurement, uint32_t now_ms)
+    {
+        float output = pid_step_ms(pid, setpoint, measurement, now_ms);
+        RCLCPP_INFO(
+            this->get_logger(),
+            "PID step %s setpoint=%.4f measurement=%.4f output=%.4f",
+            label,
+            setpoint,
+            measurement,
+            output
+        );
+        return output;
+    }
+
+
     void log_move_command_debug(const char *label, double yaw_err, double v_cmd, double w_cmd, double d_err)
     {
-        if (debug_ticks_ < 10) {
+        if (debug_ticks_ < 100) {
             RCLCPP_INFO(
                 this->get_logger(),
                 "DEBUG %s [%d] th_now=%.4f th_target=%.4f yaw_err=%.4f d_err=%.4f v_cmd=%.4f w_cmd=%.4f",
