@@ -33,39 +33,6 @@ License: GNU GPLv3
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
-
-// Returns a commanded speed based on remaining error.
-// error: signed (target - current). Sign determines direction.
-// v_max: max magnitude of speed (m/s or rad/s)
-// v_min: minimum magnitude once you’re moving (helps overcome stiction). Set 0 if unwanted.
-// slow_zone: error magnitude where ramping starts (units match error)
-// tol: within this tolerance, return 0 (done)
-static double ramp_speed_from_error(double error,
-                                   double v_max,
-                                   double v_min,
-                                   double slow_zone,
-                                   double tol)
-{
-    const double e = std::abs(error);
-
-    if (e <= tol) return 0.0;
-
-    // Ramp factor: 1 outside slow zone, linearly down to 0 at tol
-    double ramp = 1.0;
-    if (e < slow_zone) {
-        // Map e in [tol, slow_zone] -> ramp in [0, 1]
-        ramp = (e - tol) / (slow_zone - tol);
-        ramp = std::clamp(ramp, 0.0, 1.0);
-    }
-
-    // Speed magnitude with clamp to [v_min, v_max]
-    double mag = v_max * ramp;
-    mag = std::clamp(mag, v_min, v_max);
-
-    // Restore direction
-    return (error >= 0.0) ? mag : -mag;
-}
-
 // Create the node class named SquareRoutine
 // It inherits rclcpp::Node class attributes and functions
 class SquareRoutine : public rclcpp::Node
@@ -83,7 +50,7 @@ class SquareRoutine : public rclcpp::Node
 		publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel",10);
       
 	  	// Create the timer
-	  	timer_ = this->create_wall_timer(20ms, std::bind(&SquareRoutine::timer_callback, this)); 	  
+	  	timer_ = this->create_wall_timer(5ms, std::bind(&SquareRoutine::timer_callback, this)); 	  
 	}
 
   private:
@@ -133,29 +100,27 @@ class SquareRoutine : public rclcpp::Node
         }	
         
         // Keep turning if not reached last angular target		
+		// If done step, stop
         else if (std::abs(error) > th_tol)
         {
+            uint32_t t = now_ms();
+
+            // error = wrap_angle(th_target - th_now)
+            // Drive error -> 0 with PID by using setpoint=0, measurement=error
+            float w_cmd = pid_step_ms(&pid_yaw, 0.0f, (float)error, t);
+
             msg.linear.x = 0.0;
-
-            msg.angular.z = ramp_speed_from_error(
-                error,
-                th_vel,
-                th_min_vel,
-                th_slow_zone,
-                th_tol
-            );
-
+            msg.angular.z = -(double)w_cmd;
             publisher_->publish(msg);
-        }
-		// If done step, stop
-		else
+        } 
+
+        else
 		{
 			msg.linear.x = 0; //double(rand())/double(RAND_MAX); //fun
 			msg.angular.z = 0; //2*double(rand())/double(RAND_MAX) - 1; //fun
 			publisher_->publish(msg);
-			last_state_complete = 1;
+			last_state_complete += 1;
 		}
-
 
 		sequence_statemachine();		
 		
@@ -165,7 +130,7 @@ class SquareRoutine : public rclcpp::Node
 	
 	void sequence_statemachine()
 	{
-		if (last_state_complete == 1)
+		if (last_state_complete == 100) // force multiple, (acting as a "stop state")
 		{
 			switch(count_) 
 			{
@@ -206,11 +171,11 @@ class SquareRoutine : public rclcpp::Node
 		x_init = x_now;
 		y_init = y_now;		
 
-        int t = now_ms();
+        uint32_t t = now_ms();
         pid_init(&pid_lin, 
-                0.8f,  
-                0.0f, 
-                0.05f, 
+                1.0,           // kp 
+                1.0f,           // ki
+                0.00f,          // kd
                 -(float)v_max, 
                 (float)v_max, 
                 -0.5f, 
@@ -226,14 +191,26 @@ class SquareRoutine : public rclcpp::Node
 	{
         th_init = th_now;
         th_target = wrap_angle(th_init + angle);
-		count_++;		// advance state counter
-		last_state_complete = 0;	
+
+        uint32_t t = now_ms();
+        pid_init(&pid_yaw,
+                0.1f,           // kp
+                0.05f,           // ki
+                0.00f,          // kd
+                -(float)w_max,
+                (float)w_max,
+                -0.5f,
+                0.5f,
+                t);
+
+        count_++;
+        last_state_complete = 0;
 	}
 	
 	// Handle angle wrapping
     	double wrap_angle(double angle)
     	{
-    	        angle = fmod(angle + M_PI,2*M_PI);
+            angle = fmod(angle + M_PI,2*M_PI);
         	if (angle <= 0.0)
         	{
            		angle += 2*M_PI;
@@ -258,8 +235,6 @@ class SquareRoutine : public rclcpp::Node
 	double q_x = 0, q_y = 0, q_z = 0, q_w = 0; 
     double th_target = 0.0;
 	size_t count_ = 0;
-    double th_slow_zone = 0.35;
-    double th_min_vel   = 0.02;
 	int last_state_complete = 1;
 
     // Custom PID controller
@@ -268,10 +243,10 @@ class SquareRoutine : public rclcpp::Node
 
     // Tuning + tolerances
     double d_tol = 0.01;     // meters
-    double th_tol = 0.03;    // radians 
+    double th_tol = 0.01;    // radians 
 
     // Output limits
-    double v_max = 0.10;     // m/s
+    double v_max = 0.30;     // m/s
     double w_max = 0.20;     // rad/s 
 
     // Helper to get ms time for PID
