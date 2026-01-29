@@ -50,7 +50,7 @@ class SquareRoutine : public rclcpp::Node
 		publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel",10);
       
 	  	// Create the timer
-	  	timer_ = this->create_wall_timer(5ms, std::bind(&SquareRoutine::timer_callback, this)); 	  
+	  	timer_ = this->create_wall_timer(100ms, std::bind(&SquareRoutine::timer_callback, this)); 	  
 	}
 
   private:
@@ -81,9 +81,19 @@ class SquareRoutine : public rclcpp::Node
 		// Calculate angle travelled from initial
 		th_now = yaw;
 	    double yaw_err = wrap_angle(th_target - th_now);
-        
+
         // distance remaining
         double d_err = d_aim - d_now;
+        
+        if (debug_ticks_ < 10) {
+            RCLCPP_INFO(
+                this->get_logger(),
+                "DEBUG [%d] th_now=%.4f th_target=%.4f yaw_err=%.4f w_cmd=%.4f",
+                debug_ticks_, th_now, th_target, yaw_err, msg.angular.z
+            );
+            debug_ticks_++;
+        }
+
 
         if (d_err > d_tol)
         {
@@ -94,10 +104,23 @@ class SquareRoutine : public rclcpp::Node
             float v_cmd = pid_step_ms(&pid_lin, 0.0f, (float)(-d_err), t);
             
             // yaw-hold PID
-            float w_cmd = pid_step_ms(&pid_yaw, 0.0f, (float)yaw_err, t);
+            float w_cmd = pid_step_ms(&pid_yaw, 0.0f, -(float)yaw_err, t);
+
+            if (debug_ticks_ < 10) {
+                RCLCPP_INFO(
+                    this->get_logger(),
+                    "DEBUG move start [%d] th_now=%.4f th_target=%.4f yaw_err=%.4f w_cmd=%.4f",
+                    debug_ticks_,
+                    th_now,
+                    th_target,
+                    yaw_err,
+                    msg.angular.z
+                );
+                debug_ticks_++;
+            }
 
             msg.linear.x = (double)v_cmd;
-            msg.angular.z = -(double)w_cmd;
+            msg.angular.z = (double)w_cmd;
 
             publisher_->publish(msg);
         }	
@@ -110,10 +133,10 @@ class SquareRoutine : public rclcpp::Node
 
             // error = wrap_angle(th_target - th_now)
             // Drive error -> 0 with PID by using setpoint=0, measurement=error
-            float w_cmd = pid_step_ms(&pid_yaw, 0.0f, (float)yaw_err, t);
+            float w_cmd = pid_step_ms(&pid_yaw, 0.0f, -(float)yaw_err, t);
 
             msg.linear.x = 0.0;
-            msg.angular.z = -(double)w_cmd;
+            msg.angular.z = (double)w_cmd;
             publisher_->publish(msg);
         } 
 
@@ -133,7 +156,7 @@ class SquareRoutine : public rclcpp::Node
 	
 	void sequence_statemachine()
 	{
-		if (last_state_complete == 100) // force multiple, (acting as a "stop state")
+		if (last_state_complete == 10) // force multiple, (acting as a "stop state")
 		{
 			switch(count_) 
 			{
@@ -170,6 +193,8 @@ class SquareRoutine : public rclcpp::Node
 	// Set the initial position as where robot is now and put new d_aim in place	
 	void move_distance(double distance)
 	{
+        debug_ticks_ = 0;
+
 		d_aim = distance;
 		x_init = x_now;
 		y_init = y_now;		
@@ -227,14 +252,11 @@ class SquareRoutine : public rclcpp::Node
 	// Handle angle wrapping
     double wrap_angle(double angle)
     {
-        angle = fmod(angle + M_PI,2*M_PI);
-        if (angle <= 0.0)
-        {
-            angle += 2*M_PI;
-        }           
-        return angle - M_PI;
+        angle = std::remainder(angle, 2.0 * M_PI);
+        return angle;
     }
 
+    int debug_ticks_ = 0;
 	
 	// Declaration of subscription_ attribute
 	rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr subscription_;
