@@ -85,18 +85,11 @@ class SquareRoutine : public rclcpp::Node
         // distance remaining
         double d_err = d_aim - d_now;
         
-        if (debug_ticks_ < 10) {
-            RCLCPP_INFO(
-                this->get_logger(),
-                "DEBUG [%d] th_now=%.4f th_target=%.4f yaw_err=%.4f w_cmd=%.4f",
-                debug_ticks_, th_now, th_target, yaw_err, msg.angular.z
-            );
-            debug_ticks_++;
-        }
-
 
         if (d_err > d_tol)
         {
+            log_move_state_debug("move start", yaw_err, d_err);
+
             uint32_t t = now_ms();
             
             // Use PID to drive distance error to 0
@@ -106,18 +99,7 @@ class SquareRoutine : public rclcpp::Node
             // yaw-hold PID
             float w_cmd = pid_step_ms(&pid_yaw, 0.0f, -(float)yaw_err, t);
 
-            if (debug_ticks_ < 10) {
-                RCLCPP_INFO(
-                    this->get_logger(),
-                    "DEBUG move start [%d] th_now=%.4f th_target=%.4f yaw_err=%.4f w_cmd=%.4f",
-                    debug_ticks_,
-                    th_now,
-                    th_target,
-                    yaw_err,
-                    msg.angular.z
-                );
-                debug_ticks_++;
-            }
+            log_move_command_debug("move cmd", yaw_err, v_cmd, w_cmd, d_err);
 
             msg.linear.x = (double)v_cmd;
             msg.angular.z = (double)w_cmd;
@@ -213,6 +195,8 @@ class SquareRoutine : public rclcpp::Node
                 0.5f, 
                 t);
 
+        log_pid_config("pid_lin", pid_lin);
+
         // reset yaw PID for heading hold
         pid_init(&pid_yaw, 
                 0.8f, 
@@ -223,6 +207,8 @@ class SquareRoutine : public rclcpp::Node
                 -0.2f,
                 0.2f, 
                 t);
+
+        log_pid_config("pid_yaw_hold", pid_yaw);
 
 		count_++;		// advance state counter
 		last_state_complete = 0;	
@@ -245,6 +231,8 @@ class SquareRoutine : public rclcpp::Node
                 0.5f,
                 t);
 
+        log_pid_config("pid_yaw_turn", pid_yaw);
+
         count_++;
         last_state_complete = 0;
 	}
@@ -254,6 +242,59 @@ class SquareRoutine : public rclcpp::Node
     {
         angle = std::remainder(angle, 2.0 * M_PI);
         return angle;
+    }
+
+
+    void log_move_state_debug(const char *label, double yaw_err, double d_err)
+    {
+        if (debug_ticks_ < 10) {
+            RCLCPP_INFO(
+                this->get_logger(),
+                "DEBUG %s [%d] th_now=%.4f th_target=%.4f yaw_err=%.4f d_err=%.4f",
+                label,
+                debug_ticks_,
+                th_now,
+                th_target,
+                yaw_err,
+                d_err
+            );
+            debug_ticks_++;
+        }
+    }
+
+    void log_move_command_debug(const char *label, double yaw_err, double v_cmd, double w_cmd, double d_err)
+    {
+        if (debug_ticks_ < 10) {
+            RCLCPP_INFO(
+                this->get_logger(),
+                "DEBUG %s [%d] th_now=%.4f th_target=%.4f yaw_err=%.4f d_err=%.4f v_cmd=%.4f w_cmd=%.4f",
+                label,
+                debug_ticks_,
+                th_now,
+                th_target,
+                yaw_err,
+                d_err,
+                v_cmd,
+                w_cmd
+            );
+            debug_ticks_++;
+        }
+    }
+
+    void log_pid_config(const char *label, const PID &pid)
+    {
+        RCLCPP_INFO(
+            this->get_logger(),
+            "PID %s kp=%.3f ki=%.3f kd=%.3f out=[%.3f, %.3f] i=[%.3f, %.3f]",
+            label,
+            pid.kp,
+            pid.ki,
+            pid.kd,
+            pid.out_min,
+            pid.out_max,
+            pid.i_min,
+            pid.i_max
+        );
     }
 
     int debug_ticks_ = 0;
