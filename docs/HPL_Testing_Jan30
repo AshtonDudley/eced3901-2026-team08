@@ -1,0 +1,36 @@
+# Testing Emag current draw
+
+Using:
+  1 ohm shunt resistor
+  Oscilloscope
+  Power Supply
+  Emag
+
+Magnet works
+
+## Test One
+  no load:
+    Vin = 4.80V
+    Vout = 4.48V
+    Voltage drop = Vin - Vout = 0.32V
+
+## Test Two
+  no load:
+    Vin = 4.88V
+    Vout = 4.48V
+    Voltage drop = 0.40V
+
+## Test Three
+  with load:
+    Vin = 4.88V
+    Vout = 4.48V
+    Voltage drop = 0.40V
+    ### measurements taken at steady state, upon initally connecting to load there is a noticeable instant voltage drop before it returns to steady state
+
+    Instant voltage drop measurements:
+      Vin Maximum = 4.92V
+      Vin Minimum = 4.60V
+      Vout Max = 4.56V
+      Vout Min = 3.84V
+
+    Constant draw: 390 mA (0.390 A)
