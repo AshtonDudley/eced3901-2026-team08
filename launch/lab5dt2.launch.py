@@ -2,7 +2,7 @@
 # Date: August 30, 2021
 # Description: Launch a basic mobile robot
 # https://automaticaddison.com
-# Modified: V. Sieben, Feb. 2023.
+# Modified: Liam Legge: 2026.
 
 import os
 from launch import LaunchDescription
@@ -24,7 +24,7 @@ def generate_launch_description():
   default_rviz_config_path = os.path.join(pkg_share, 'rviz/nav2_config.rviz')
   nav2_dir = FindPackageShare(package='nav2_bringup').find('nav2_bringup') 
   nav2_launch_dir = os.path.join(nav2_dir, 'launch') 
-  static_map_path = os.path.join(pkg_share, 'maps', 'lab4_map')
+  static_map_path = os.path.join(pkg_share, 'maps', 'dt2_map')
   nav2_params_path = os.path.join(pkg_share, 'params', 'nav2_params.yaml')
   nav2_bt_path = FindPackageShare(package='nav2_bt_navigator').find('nav2_bt_navigator')
   behavior_tree_xml_path = os.path.join(nav2_bt_path, 'behavior_trees', 'navigate_w_replanning_and_recovery.xml')
@@ -182,5 +182,3 @@ def generate_launch_description():
   
   
   return ld
-
-
