@@ -27,7 +27,7 @@ ament_target_dependencies(dt1 rclcpp std_msgs nav_msgs geometry_msgs tf2)
 add_executable(reckoning
   src/dead_reckoning_maze.cpp
 )
-ament_target_dependencies(nav rclcpp std_msgs geometry_msgs nav_msgs tf2)
+ament_target_dependencies(reckoning rclcpp std_msgs geometry_msgs nav_msgs tf2)
 
 # Install Cpp executables
 install(TARGETS
