@@ -153,7 +153,7 @@ class SquareRoutine : public rclcpp::Node
 				turn_angle(-M_PI/2.02); //should be facing correct direction
 				break;
 			  case 13:
-			    move_distance(0.45);
+			    move_distance(0.50);
 				break;
 			  case 14:
 			    turn_angle(M_PI/2.02);
