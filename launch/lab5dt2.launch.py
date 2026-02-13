@@ -134,14 +134,14 @@ def generate_launch_description():
 
   ####################################################
   # Students have to add their dead reckoning code
-start_reckoning = Node(
-    package='eced3901',
-    executable='reckoning',
-    name='reckoning_node',
-    output='screen')
+  start_reckoning = Node(
+      package='eced3901',
+      executable='reckoning',
+      name='reckoning_node',
+      output='screen')
 
-delayed_reckoning = TimerAction(period=10.0,
-    actions=[start_reckoning])
+  delayed_reckoning = TimerAction(period=10.0,
+      actions=[start_reckoning])
   
   
   start_mapsave = Node(
