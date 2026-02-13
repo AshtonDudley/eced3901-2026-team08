@@ -24,7 +24,7 @@ def generate_launch_description():
   default_rviz_config_path = os.path.join(pkg_share, 'rviz/nav2_config.rviz')
   nav2_dir = FindPackageShare(package='nav2_bringup').find('nav2_bringup') 
   nav2_launch_dir = os.path.join(nav2_dir, 'launch') 
-  static_map_path = os.path.join(pkg_share, 'maps', 'dt2_map')
+  static_map_path = os.path.join(pkg_share, 'maps', 'maze_map')
   nav2_params_path = os.path.join(pkg_share, 'params', 'nav2_params.yaml')
   nav2_bt_path = FindPackageShare(package='nav2_bt_navigator').find('nav2_bt_navigator')
   behavior_tree_xml_path = os.path.join(nav2_bt_path, 'behavior_trees', 'navigate_w_replanning_and_recovery.xml')
@@ -133,15 +133,15 @@ def generate_launch_description():
                         'autostart': autostart}.items())
 
   ####################################################
-  # Students have to add their DT1 code
-  start_dt1 = Node(
+  # Students have to add their dead reckoning code
+start_reckoning = Node(
     package='eced3901',
-    executable='dt1',
-    name='dt1_square',
-    output='screen') 
-     
-  delayed_dt1 = TimerAction(period=10.0,
-            actions=[start_dt1])
+    executable='reckoning',
+    name='reckoning_node',
+    output='screen')
+
+delayed_reckoning = TimerAction(period=10.0,
+    actions=[start_reckoning])
   
   
   start_mapsave = Node(
@@ -177,7 +177,7 @@ def generate_launch_description():
   # Add any actions
   ld.add_action(start_rviz_cmd)
   ld.add_action(start_ros2_navigation_cmd)
-  ld.add_action(delayed_dt1)
+  ld.add_action(delayed_reckoning)
   ld.add_action(delayed_mapsave)
   
   
