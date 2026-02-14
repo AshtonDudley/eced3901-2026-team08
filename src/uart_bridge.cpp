@@ -20,10 +20,10 @@ public:
     SerialBridgeNode() : Node("serial_bridge_node") {
         publisher_ = this->create_publisher<std_msgs::msg::Int32>("ultrasonic_distance", 10);
         
-        // open connection to linux serial device, should be ttyUSB0 if only one UART bus is activated.
+        // open connection to linux serial device, should be ttyUSB4 if only one UART bus is activated.
         // for multiple UART nodes, we'll publish to multiple topics. 
         
-        serial_port_ = open("/dev/ttyUSB0", O_RDWR);
+        serial_port_ = open("/dev/ttyUSB4", O_RDWR);
 
         // set 115200 baud for Serial Port
         struct termios tty;
