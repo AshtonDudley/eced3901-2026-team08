@@ -136,8 +136,8 @@ def generate_launch_description():
   start_wpfollow = Node(
     condition=IfCondition(use_rviz),
     package='eced3901',
-    executable='coastal.py',
-    name='coastal',
+    executable='demo_inspection.py',
+    name='wp_follower',
     output='screen') 
   
   

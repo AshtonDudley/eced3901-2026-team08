@@ -51,9 +51,6 @@ install(
 install(PROGRAMS
 #  scripts/wp_follower.py
   scripts/demo_inspection.py
-  DESTINATION lib/${PROJECT_NAME}
-  
-  scripts/coastal.py
   DESTINATION lib/${PROJECT_NAME})
 
 
