@@ -49,17 +49,20 @@ def main():
 
     navigator.waitUntilNav2Active()
 
-    # Waypoints: [x, y, yaw]
+    # Poses: [x, y, yaw]
     inspection_route = [
         [1.33, 0.46, 0.78],
-        [3.55, 0.0, 1.57],
+        #Drop off cargo
+        [3.90, 0.5, 3.14],
+        #Pick up cargo
+        [3.55, 0.0, -1.57],
         [1.78, 0.46, 0.78],
         [-0.5, -0.5, 0.0]
     ]
 
     # Choose which waypoint numbers require a "true" message
     # Wait only after waypoint 2
-    gated_waypoints = [2]
+    gated_waypoints = [2, 3]
 
     # Convert to PoseStamped list
     inspection_points = []
