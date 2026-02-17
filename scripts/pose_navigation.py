@@ -52,6 +52,10 @@ def main():
         [0.0, 0.0, 0.0]
     ]
 
+    # Choose which waypoint numbers require a "true" message
+    # Example: wait only after waypoint 2
+    gated_waypoints = [2]
+
     # Convert to PoseStamped list
     inspection_points = []
     for pt in inspection_route:
@@ -67,9 +71,9 @@ def main():
         pose.pose.orientation.w = q[3]
         inspection_points.append(deepcopy(pose))
 
-    # Main loop: go to each waypoint, then wait for continue signal
-    for idx, pose in enumerate(inspection_points):
-        print(f"\n=== Sending waypoint {idx+1}/{len(inspection_points)} ===")
+    # Main loop: go to each waypoint
+    for idx, pose in enumerate(inspection_points, start=1):
+        print(f"\n=== Sending waypoint {idx}/{len(inspection_points)} ===")
         navigator.goToPose(pose)
 
         # Wait until robot reaches the waypoint
@@ -78,16 +82,19 @@ def main():
 
         result = navigator.getResult()
         if result == TaskResult.SUCCEEDED:
-            print("Reached waypoint.")
+            print(f"Reached waypoint {idx}.")
         else:
             print("Navigation failed or canceled.")
             break
 
-        # Reset gate and wait for continue message
-        gate.allow_continue = False
-        print("Waiting for /continue_signal to proceed...")
-        while not gate.allow_continue:
-            rclpy.spin_once(gate, timeout_sec=0.1)
+        # Decide whether to wait or auto-continue
+        if idx in gated_waypoints:
+            print("Waiting for /continue_signal to proceed...")
+            gate.allow_continue = False
+            while not gate.allow_continue:
+                rclpy.spin_once(gate, timeout_sec=0.1)
+        else:
+            print("Auto‑continuing to next waypoint...")
 
     print("\nAll waypoints completed.")
     rclpy.shutdown()
