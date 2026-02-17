@@ -54,7 +54,7 @@ def main():
         [1.33, 0.46, 0.78],
         [3.55, 0.0, 1.57],
         [1.78, 0.46, 0.78],
-        [0.0, 0.0, 0.0]
+        [-0.2, -0.2, 0.0]
     ]
 
     # Choose which waypoint numbers require a "true" message
