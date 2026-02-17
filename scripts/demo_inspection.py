@@ -60,18 +60,18 @@ def main():
     inspection_route = [
         [1.33, 0.46, 0.78],
         [3.55, 0.0, 1.57],
-        [1.78, 0.46, 0.78]]
-        #[0.0, 0.0, 0.0]]
+        [1.78, 0.46, 0.78],
+        [0.0, 0.0, 0.0]]
 
     # Set our demo's initial pose
-    initial_pose = PoseStamped()
-    initial_pose.header.frame_id = 'map'
-    initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-    initial_pose.pose.position.x = 0.0
-    initial_pose.pose.position.y = 0.
-    initial_pose.pose.orientation.z = 0.0
-    initial_pose.pose.orientation.w = 0.0
-    navigator.setInitialPose(initial_pose)
+ #   initial_pose = PoseStamped()
+ #   initial_pose.header.frame_id = 'map'
+ #   initial_pose.header.stamp = navigator.get_clock().now().to_msg()
+ #   initial_pose.pose.position.x = 0.0
+ #   initial_pose.pose.position.y = 0.
+ #   initial_pose.pose.orientation.z = 0.0
+ #   initial_pose.pose.orientation.w = 0.0
+ #   navigator.setInitialPose(initial_pose)
 
     # Wait for navigation to fully activate
     navigator.waitUntilNav2Active()
@@ -81,8 +81,8 @@ def main():
     inspection_pose = PoseStamped()
     inspection_pose.header.frame_id = 'map'
     inspection_pose.header.stamp = navigator.get_clock().now().to_msg()
-    inspection_pose.pose.orientation.z = 0.0
-    inspection_pose.pose.orientation.w = 1.0
+    #inspection_pose.pose.orientation.z = 0.0
+    #inspection_pose.pose.orientation.w = 1.0
     for pt in inspection_route:    
         inspection_pose.pose.position.x = pt[0]
         inspection_pose.pose.position.y = pt[1]
