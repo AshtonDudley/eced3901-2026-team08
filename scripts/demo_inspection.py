@@ -58,9 +58,9 @@ def main():
     # from either a map or drive and repeat.
     # [ X-pos, Y-pos, Theta-yaw ]
     inspection_route = [
-        [1.33, 0.46, 0.78],
+        #[1.33, 0.46, 0.78],
         [3.55, 0.0, 1.57],
-        [1.78, 0.46, 0.78],
+        #[1.78, 0.46, 0.78],
         [0.0, 0.0, 0.0]]
 
     # Set our demo's initial pose
