@@ -7,6 +7,7 @@ from std_msgs.msg import Bool
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 from copy import deepcopy
 import numpy as np
+import time
 
 
 # Convert Euler → Quaternion
@@ -17,6 +18,10 @@ def get_quaternion_from_euler(roll, pitch, yaw):
     qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
     return [qx, qy, qz, qw]
 
+def gated_check(idx): 
+    print(f"Running gated check for waypoint {idx}...") 
+    time.sleep(10)
+    return True
 
 # Subscriber node that waits for a "continue" signal
 class ContinueGate(Node):
@@ -53,7 +58,7 @@ def main():
     ]
 
     # Choose which waypoint numbers require a "true" message
-    # Example: wait only after waypoint 2
+    # Wait only after waypoint 2
     gated_waypoints = [2]
 
     # Convert to PoseStamped list
@@ -89,12 +94,12 @@ def main():
 
         # Decide whether to wait or auto-continue
         if idx in gated_waypoints:
-            print("Waiting for /continue_signal to proceed...")
-            gate.allow_continue = False
-            while not gate.allow_continue:
-                rclpy.spin_once(gate, timeout_sec=0.1)
+            print(f"Waypoint {idx} is gated. Running check") 
+            while not gated_check(idx): 
+                rclpy.spin_once(navigator, timeout_sec=0.1) 
+            print("Gated check passed. Continuing")
         else:
-            print("Auto‑continuing to next waypoint...")
+            print("Auto‑continuing to next waypoint")
 
     print("\nAll waypoints completed.")
     rclpy.shutdown()
