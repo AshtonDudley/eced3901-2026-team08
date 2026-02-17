@@ -50,9 +50,8 @@ install(
 # Install Python executables
 install(PROGRAMS
 #  scripts/wp_follower.py
-  scripts/demo_inspection.py
+  scripts/pose_navigation.py
   DESTINATION lib/${PROJECT_NAME})
-
 
 
 if(BUILD_TESTING)
