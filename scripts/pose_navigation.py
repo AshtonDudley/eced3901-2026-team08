@@ -55,7 +55,7 @@ def main():
         #Necessary half way pose
         [1.33, 0.46, 0.78],
         #Drop off cargo
-        [4.1, 0.5, 1.57],
+        [3.6, 0.5, 1.57],
         #Reset
         [3.05, 0.5, 3.14],
         #Pick up cargo
