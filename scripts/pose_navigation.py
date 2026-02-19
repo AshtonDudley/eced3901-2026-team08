@@ -52,8 +52,9 @@ def main():
 
     # Poses: [x, y, yaw]
     inspection_route = [
-        #Necessary half way pose
+        #Necessary half way poses
         [1.8, 0.6, 0.78],
+        [2.6, 0.1, 0.0],
         #Drop off cargo
         [3.85, 0.6, 1.57],
         #Reset
