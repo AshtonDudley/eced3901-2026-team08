@@ -69,7 +69,7 @@ def main():
 
     # Choose which waypoint numbers require a "true" message
     # Wait only after waypoint 2
-    gated_waypoints = [2, 4]
+    gated_waypoints = [3, 5]
 
     # Convert to PoseStamped list
     inspection_points = []
