@@ -18,6 +18,7 @@ def get_quaternion_from_euler(roll, pitch, yaw):
     qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
     return [qx, qy, qz, qw]
 
+#Create condition for checking if magnet is attatched
 def gated_check(idx): 
     print(f"Running gated check for waypoint {idx}...") 
     time.sleep(10)
@@ -51,20 +52,23 @@ def main():
 
     # Poses: [x, y, yaw]
     inspection_route = [
+        #Necessary half way pose
         [1.33, 0.46, 0.78],
         #Drop off cargo
-        [4.1, 0.6, 1.57],
+        [4.1, 0.5, 1.57],
         #Reset
-        [3.05, 0.3, 3.14],
+        [3.05, 0.5, 3.14],
         #Pick up cargo
         [3.45, 0.0, 3.14],
+        #Necessary half way pose
         [1.78, 0.46, 0.78],
+        #Head back to origin
         [-0.5, -0.5, 0.0]
     ]
 
     # Choose which waypoint numbers require a "true" message
     # Wait only after waypoint 2
-    gated_waypoints = [2, 3]
+    gated_waypoints = [2, 4]
 
     # Convert to PoseStamped list
     inspection_points = []
