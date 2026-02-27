@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+#! Based off code created by V. Sieben
+#! Updated by Megan Neville
 
 import rclpy
 from rclpy.node import Node

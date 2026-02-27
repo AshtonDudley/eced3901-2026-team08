@@ -2,7 +2,7 @@
 # Date: August 30, 2021
 # Description: Launch a basic mobile robot
 # https://automaticaddison.com
-# Modified: L. Legge, Feb. 2026.
+# Modified: Megan Neville, Feb 27, 2026
 
 import os
 from launch import LaunchDescription
