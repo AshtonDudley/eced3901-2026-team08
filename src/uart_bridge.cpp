@@ -50,7 +50,7 @@ public:
         // Ceate timer loop to read serial
         timer_ = this->create_wall_timer(10ms, std::bind(&SerialBridgeNode::read_serial, this));
 
-        lidar_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
         "/scan", 10,
         std::bind(&SerialBridgeNode::lidar_callback, this, std::placeholders::_1));
     }
