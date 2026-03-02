@@ -17,6 +17,7 @@
 
 #include <algorithms>
 #include <cmath>
+#include <limits>
 
 using namespace std::chrono_literals;
 
@@ -28,7 +29,7 @@ public:
         // open connection to linux serial device, should be ttyUSB4 if only one UART bus is activated.
         // for multiple UART nodes, we'll publish to multiple topics. 
         
-        serial_port_ = open("/dev/ttyUSB4", O_RDWR);
+        serial_port_ = open("/dev/ttyUSB4", O_RDWR | O_NOCTTY | O_NONBLOCK);
 
         // set 115200 baud for Serial Port
         struct termios tty;
@@ -44,13 +45,20 @@ public:
         tty.c_cflag &= ~PARENB;             /* no parity bit */
         tty.c_cflag &= ~CSTOPB;             /* only need 1 stop bit */
         tty.c_cflag &= ~CRTSCTS;            /* no hardware flowcontrol */
+        tty.c_lflag &= ~ICANON; // Disable canonical mode
+        tty.c_lflag &= ~ECHO;   // Disable echo
+        tty.c_lflag &= ~ECHOE;  // Disable erasure
+        tty.c_lflag &= ~ISIG;   // Disable interpretation of INTR, QUIT and SUSP
+        tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off software flow control
+        tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INPCK|IGNCR|ICRNL); // Disable any special handling of received bytes
+        tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline translation)
 
         tcsetattr(serial_port_, TCSANOW, &tty);
 
         // Ceate timer loop to read serial
         timer_ = this->create_wall_timer(10ms, std::bind(&SerialBridgeNode::read_serial, this));
 
-        lidar_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
         "/scan", 10,
         std::bind(&SerialBridgeNode::lidar_callback, this, std::placeholders::_1));
     }
