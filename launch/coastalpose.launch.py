@@ -136,7 +136,7 @@ def generate_launch_description():
   start_wpfollow = Node(
     condition=IfCondition(use_rviz),
     package='eced3901',
-    executable='pose_navigation.py',
+    executable='pose_navigation_left.py',
     name='wp_follower',
     output='screen') 
   
