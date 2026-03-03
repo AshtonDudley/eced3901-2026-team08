@@ -68,6 +68,7 @@ def main():
         [1.8, 0.6, 0.78],
         #Head back to origin
         [-0.5, -0.5, 0.0]
+
     ]
 
     # Choose which waypoint numbers require a "true" message
