@@ -2,7 +2,7 @@
 # Date: August 30, 2021
 # Description: Launch a basic mobile robot
 # https://automaticaddison.com
-# Modified: Megan Neville, Feb 27, 2026
+# Modified: Megan Neville, March 2, 2026
 
 import os
 from launch import LaunchDescription
@@ -23,7 +23,7 @@ def generate_launch_description():
   default_rviz_config_path = os.path.join(pkg_share, 'rviz/nav2.rviz')
   nav2_dir = FindPackageShare(package='nav2_bringup').find('nav2_bringup') 
   nav2_launch_dir = os.path.join(nav2_dir, 'launch') 
-  static_map_path = os.path.join(pkg_share, 'maps', 'maze_map_left.yaml')
+  static_map_path = os.path.join(pkg_share, 'maps', 'maze_map_right.yaml')
   nav2_params_path = os.path.join(pkg_share, 'params', 'nav2_params.yaml')
   nav2_bt_path = FindPackageShare(package='nav2_bt_navigator').find('nav2_bt_navigator')
   behavior_tree_xml_path = os.path.join(nav2_bt_path, 'behavior_trees', 'navigate_w_replanning_and_recovery.xml')
@@ -136,7 +136,7 @@ def generate_launch_description():
   start_wpfollow = Node(
     condition=IfCondition(use_rviz),
     package='eced3901',
-    executable='pose_navigation.py',
+    executable='pose_navigation_right.py',
     name='wp_follower',
     output='screen') 
   
@@ -164,5 +164,3 @@ def generate_launch_description():
   ld.add_action(start_wpfollow)
   
   return ld
-
-

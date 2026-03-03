@@ -50,7 +50,8 @@ install(
 # Install Python executables
 install(PROGRAMS
 #  scripts/wp_follower.py
-  scripts/pose_navigation.py
+  scripts/pose_navigation_left.py
+  scripts/pose_naviagtion_right.py
   DESTINATION lib/${PROJECT_NAME})
 
 
