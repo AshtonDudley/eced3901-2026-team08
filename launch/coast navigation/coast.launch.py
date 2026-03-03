@@ -25,9 +25,6 @@ def generate_launch_description():
 
   print(f"\nLaunching {direction_input.upper()} configuration...\n")
 
-  # =============================
-  # 📂 PATH SETUP
-  # =============================
 
   pkg_share = FindPackageShare(package='eced3901').find('eced3901')
   default_launch_dir = os.path.join(pkg_share, 'launch')
@@ -49,10 +46,10 @@ def generate_launch_description():
 
   if direction_input == 'left':
       static_map_path = os.path.join(pkg_share, 'maps', 'maze_map_left.yaml')
-      wp_executable = 'leftcoast.py'
+      wp_executable = 'leftcoast.launch.py'
   else:
       static_map_path = os.path.join(pkg_share, 'maps', 'maze_map_right.yaml')
-      wp_executable = 'rightcoast.py'
+      wp_executable = 'rightcoast.launch.py'
 
   autostart = LaunchConfiguration('autostart')
   map_yaml_file = LaunchConfiguration('map')
