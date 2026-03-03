@@ -28,7 +28,7 @@ def generate_launch_description():
 
     launch_left = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(launch_dir, 'leftcoast.launch.py')
+            os.path.join(launch_dir, 'coast_navigation/leftcoast.launch.py')
         ),
         condition=IfCondition(
             PythonExpression(["'", direction, "' == 'left'"])
@@ -37,7 +37,7 @@ def generate_launch_description():
 
     launch_right = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(launch_dir, 'rightcoast.launch.py')
+            os.path.join(launch_dir, 'coast_navigation/rightcoast.launch.py')
         ),
         condition=IfCondition(
             PythonExpression(["'", direction, "' == 'right'"])
