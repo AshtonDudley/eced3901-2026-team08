@@ -13,9 +13,9 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
-#include "sensor_msgs/msg/scan.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
-#include <algorithms>
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
