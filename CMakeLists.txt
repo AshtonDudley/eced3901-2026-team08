@@ -51,7 +51,7 @@ install(
 install(PROGRAMS
 #  scripts/wp_follower.py
   scripts/pose_navigation_left.py
-  scripts/pose_naviagtion_right.py
+  scripts/pose_navigation_right.py
   DESTINATION lib/${PROJECT_NAME})
 
 
