@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <cstring>
 #include <fcntl.h>
 #include <errno.h>
 #include <termios.h>
