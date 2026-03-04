@@ -104,7 +104,7 @@ def generate_launch_description():
     
   declare_use_sim_time_cmd = DeclareLaunchArgument(
     name='use_sim_time',
-    default_value='False',
+    default_value='True',
     description='Use simulation (Gazebo) clock if true')
 
    
@@ -112,12 +112,14 @@ def generate_launch_description():
 
   # Launch RViz
   start_rviz_cmd = Node(
-    condition=IfCondition(use_rviz),
-    package='rviz2',
-    executable='rviz2',
-    name='rviz2',
-    output='screen',
-    arguments=['-d', rviz_config_file])    
+      condition=IfCondition(use_rviz),
+      package='rviz2',
+      executable='rviz2',
+      name='rviz2',
+      output='screen',
+      arguments=['-d', rviz_config_file],
+      parameters=[{'use_sim_time': use_sim_time}]
+  )   
 
   # Launch the ROS 2 Navigation Stack
   start_ros2_navigation_cmd = IncludeLaunchDescription(
@@ -134,11 +136,13 @@ def generate_launch_description():
   
   # Launch WP follower
   start_wpfollow = Node(
-    condition=IfCondition(use_rviz),
-    package='eced3901',
-    executable='pose_navigation_left.py',
-    name='wp_follower',
-    output='screen') 
+      condition=IfCondition(use_rviz),
+      package='eced3901',
+      executable='pose_navigation_left.py',
+      name='wp_follower',
+      output='screen',
+      parameters=[{'use_sim_time': use_sim_time}]
+  )
   
   
   # Create the launch description and populate
