@@ -73,7 +73,7 @@ def generate_launch_description():
     description='Full path to the behavior tree xml file to use')
         
   declare_map_yaml_cmd = DeclareLaunchArgument(
-    name='map',
+    name='maps',
     default_value=static_map_path,
     description='Full path to map file to load')
         
@@ -125,7 +125,7 @@ def generate_launch_description():
     launch_arguments = {'namespace': namespace,
                         'use_namespace': use_namespace,
                         'slam': slam,
-                        'map': map_yaml_file,
+                        'maps': map_yaml_file,
                         'use_sim_time': use_sim_time,
                         'params_file': params_file,
                         'default_bt_xml_filename': default_bt_xml_filename,
