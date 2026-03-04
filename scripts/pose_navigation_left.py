@@ -24,7 +24,9 @@ def get_quaternion_from_euler(roll, pitch, yaw):
 #Create condition for checking if magnet is attatched
 def gated_check(idx): 
     print(f"Running gated check for waypoint {idx}...") 
-    time.sleep(10)
+    start_time = time.time()
+    while time.time() - start_time < 10:
+        rclpy.spin_once(gate, timeout_sec=0.1)
     return True
 
 # Subscriber node that waits for a "continue" signal
@@ -44,6 +46,12 @@ class ContinueGate(Node):
             self.get_logger().info("Continue signal received.")
             self.allow_continue = True
 
+navigator = BasicNavigator()
+gate = ContinueGate()
+
+executor = rclpy.executors.MultiThreadedExecutor()
+executor.add_node(navigator)
+executor.add_node(gate)
 
 def main():
     rclpy.init()
@@ -96,8 +104,10 @@ def main():
         navigator.goToPose(pose)
 
         # Wait until robot reaches the waypoint
+        # while not navigator.isTaskComplete():
+        #     rclpy.spin_once(gate, timeout_sec=0.1)
         while not navigator.isTaskComplete():
-            rclpy.spin_once(gate, timeout_sec=0.1)
+            executor.spin_once(timeout_sec=0.1)
 
         result = navigator.getResult()
         if result == TaskResult.SUCCEEDED:
