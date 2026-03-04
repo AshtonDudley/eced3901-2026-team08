@@ -64,10 +64,17 @@ private:
         int n = read(serial_port_, buf, sizeof(buf) - 1);
         if (n > 0) {
             buf[n] = '\0';
-            try {
-                auto message = std_msgs::msg::Int32();
-                message.data = std::stoi(buf);
-                publisher_->publish(message);
+            std:string input(buf);
+            std:string prefix = "[TOPIC] minDistance";
+            size_t pos = input.find(prefix);
+            if (pos != std::string::npos) {
+                size_t start = pos + prefix.length();
+                size_t end = input.find_first_not_of("0123456789", start);
+                std::string number_str = input.substr(start, end - start);
+                try {
+                    auto message = std_msgs::msg::Int32();
+                    message.data = std::stoi(number_str);
+                    publisher_->publish(message);
             } catch (...) {
                 // Ignore partial lines or other non integer shit
             }
