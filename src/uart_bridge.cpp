@@ -81,6 +81,7 @@ private:
             }
         }
     }
+    /*
     void lidar_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
         if (msg->ranges.empty())
         return;
@@ -102,11 +103,12 @@ private:
             std::string out = std::to_string(distance_cm) + "\n";
             write(serial_port_, out.c_str(), out.length());
         }
+    
     }
-
+    */
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr publisher_;
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_;
+    //rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_; // Can be added back in for LiDAR data sending
     int serial_port_;
 };
 
