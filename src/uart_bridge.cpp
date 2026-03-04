@@ -1,6 +1,6 @@
 // Author: Alexandre DesAulniers
 // Last Updated, Feb 11th 2026 @ 11:08AM
-// Edits: Liam Legge - Serial Send of LiDAR Data
+// Edits: Liam Legge
 
 #include <chrono>
 #include <functional>
@@ -14,11 +14,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
 
 using namespace std::chrono_literals;
 
@@ -58,10 +54,6 @@ public:
 
         // Ceate timer loop to read serial
         timer_ = this->create_wall_timer(10ms, std::bind(&SerialBridgeNode::read_serial, this));
-
-        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        "/scan", 10,
-        std::bind(&SerialBridgeNode::lidar_callback, this, std::placeholders::_1));
     }
 
     ~SerialBridgeNode() { close(serial_port_); }
@@ -81,34 +73,9 @@ private:
             }
         }
     }
-    /*
-    void lidar_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-        if (msg->ranges.empty())
-        return;
-        float min_distance = std::numeric_limits<float>::infinity();
 
-        // Iterate through the ranges to find the minimum valid distance
-        for (float r : msg->ranges)
-        {
-            if (std::isfinite(r) && r >= msg->range_min && r <= msg->range_max)
-            {
-                if (r < min_distance)
-                    min_distance = r;
-            }
-        }
-        // When minimum distance is found, send over serial.
-        if (std::isfinite(min_distance))
-        {
-            int distance_cm = static_cast<int>(min_distance * 100.0);
-            std::string out = std::to_string(distance_cm) + "\n";
-            write(serial_port_, out.c_str(), out.length());
-        }
-    
-    }
-    */
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr publisher_;
     rclcpp::TimerBase::SharedPtr timer_;
-    //rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscription_; // Can be added back in for LiDAR data sending
     int serial_port_;
 };
 
