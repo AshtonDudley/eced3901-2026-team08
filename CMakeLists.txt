@@ -25,10 +25,10 @@ ament_target_dependencies(talker rclcpp std_msgs)
 add_executable(dt1 src/eced3901_dt1.cpp)
 ament_target_dependencies(dt1 rclcpp std_msgs nav_msgs geometry_msgs tf2)
 
-add_executable(dt1_final src/dt1_final.cpp)
+add_executable(dt1_final src/Raft_motion_sequence.cpp)
 ament_target_dependencies(dt1_final rclcpp std_msgs nav_msgs geometry_msgs tf2 sensor_msgs)
 
-add_executable(ultrasonic_serial_node src/ultrasonic_serial_node.cpp)
+add_executable(ultrasonic_serial_node src/raft_ultrasonic.cpp)
 ament_target_dependencies(ultrasonic_serial_node rclcpp sensor_msgs)
 target_link_libraries(ultrasonic_serial_node serial)
 
