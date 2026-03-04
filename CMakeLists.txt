@@ -15,6 +15,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 
 # Create Cpp executable
@@ -24,11 +25,19 @@ ament_target_dependencies(talker rclcpp std_msgs)
 add_executable(dt1 src/eced3901_dt1.cpp)
 ament_target_dependencies(dt1 rclcpp std_msgs nav_msgs geometry_msgs tf2)
 
+add_executable(dt1_final src/Raft_motion_sequence.cpp)
+ament_target_dependencies(dt1_final rclcpp std_msgs nav_msgs geometry_msgs tf2 sensor_msgs)
+
+add_executable(ultrasonic_serial_node src/raft_ultrasonic.cpp)
+ament_target_dependencies(ultrasonic_serial_node rclcpp sensor_msgs)
+target_link_libraries(ultrasonic_serial_node serial)
 
 # Install Cpp executables
 install(TARGETS
   talker
   dt1
+  dt1_final
+  ultrasonic_serial_node
   DESTINATION lib/${PROJECT_NAME})
 # uncomment the following section in order to fill in
 # further dependencies manually.
