@@ -31,7 +31,7 @@ def generate_launch_description():
   # Launch configuration variables specific to simulation
   autostart = LaunchConfiguration('autostart')
   default_bt_xml_filename = LaunchConfiguration('default_bt_xml_filename')
-  map_yaml_file = LaunchConfiguration('map')
+  map_yaml_file = LaunchConfiguration('maps')
   model = LaunchConfiguration('model')
   namespace = LaunchConfiguration('namespace')
   params_file = LaunchConfiguration('params_file')
