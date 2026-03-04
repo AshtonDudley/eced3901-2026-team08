@@ -31,7 +31,7 @@ def generate_launch_description():
   # Launch configuration variables specific to simulation
   autostart = LaunchConfiguration('autostart')
   default_bt_xml_filename = LaunchConfiguration('default_bt_xml_filename')
-  map_yaml_file = LaunchConfiguration('maps')
+  map_yaml_file = LaunchConfiguration('map')
   model = LaunchConfiguration('model')
   namespace = LaunchConfiguration('namespace')
   params_file = LaunchConfiguration('params_file')
@@ -73,7 +73,7 @@ def generate_launch_description():
     description='Full path to the behavior tree xml file to use')
         
   declare_map_yaml_cmd = DeclareLaunchArgument(
-    name='maps',
+    name='map',
     default_value=static_map_path,
     description='Full path to map file to load')
         
@@ -125,7 +125,7 @@ def generate_launch_description():
     launch_arguments = {'namespace': namespace,
                         'use_namespace': use_namespace,
                         'slam': slam,
-                        'maps': map_yaml_file,
+                        'map': map_yaml_file,
                         'use_sim_time': use_sim_time,
                         'params_file': params_file,
                         'default_bt_xml_filename': default_bt_xml_filename,
