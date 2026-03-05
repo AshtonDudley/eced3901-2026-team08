@@ -152,7 +152,7 @@ def generate_launch_description():
   ld.add_action(declare_map_yaml_cmd)
   ld.add_action(declare_model_path_cmd)
   ld.add_action(declare_params_file_cmd)
-  ld.add_action(declare_rviz_config_file_cmsd)
+  ld.add_action(declare_rviz_config_file_cmd)
   ld.add_action(declare_slam_cmd)
   ld.add_action(declare_use_rviz_cmd) 
   ld.add_action(declare_use_sim_time_cmd)
