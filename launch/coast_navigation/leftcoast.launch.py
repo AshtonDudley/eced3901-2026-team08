@@ -23,7 +23,11 @@ def generate_launch_description():
   default_rviz_config_path = os.path.join(pkg_share, 'rviz/nav2.rviz')
   nav2_dir = FindPackageShare(package='nav2_bringup').find('nav2_bringup') 
   nav2_launch_dir = os.path.join(nav2_dir, 'launch') 
+<<<<<<< HEAD
   static_map_path = os.path.join(pkg_share, 'maps', 'maze_map_LEFT')
+=======
+  static_map_path = os.path.join(pkg_share, 'maps', 'left_coast_map.yaml')
+>>>>>>> 4132db1f03e47191c97fd0d638db49940d5f518a
   nav2_params_path = os.path.join(pkg_share, 'params', 'nav2_params.yaml')
   nav2_bt_path = FindPackageShare(package='nav2_bt_navigator').find('nav2_bt_navigator')
   behavior_tree_xml_path = os.path.join(nav2_bt_path, 'behavior_trees', 'navigate_w_replanning_and_recovery.xml')
