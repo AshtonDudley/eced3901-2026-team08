@@ -58,10 +58,18 @@ def main():
     # from either a map or drive and repeat.
     # [ X-pos, Y-pos, Theta-yaw ]
     inspection_route = [
-        [1.33, 0.46, 0.78],
-        [3.55, 0.0, 1.57],
-        [1.78, 0.46, 0.78],
-        [0.0, 0.0, 0.0]]
+        [1.8, 0.6, 0.78],
+        [2.6, 0.1, 0.0],
+        #Drop off cargo
+        [3.85, 0.6, 1.57],
+        #Reset
+        [2.8, 0.3, 3.14],
+        #Pick up cargo
+        [3.45, 0.0, 3.14],
+        #Necessary half way pose
+        [1.8, 0.6, 0.78],
+        #Head back to origin
+        [-0.5, -0.5, 0.0]]
 
     # Set our demo's initial pose
  #   initial_pose = PoseStamped()
