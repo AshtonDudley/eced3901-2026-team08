@@ -2,7 +2,7 @@
 # Date: August 30, 2021
 # Description: Launch a basic mobile robot
 # https://automaticaddison.com
-# Modified: Megan Neville, March 2, 2026
+# Modified: V. Sieben, Feb. 2023.
 
 import os
 from launch import LaunchDescription
@@ -23,7 +23,7 @@ def generate_launch_description():
   default_rviz_config_path = os.path.join(pkg_share, 'rviz/nav2.rviz')
   nav2_dir = FindPackageShare(package='nav2_bringup').find('nav2_bringup') 
   nav2_launch_dir = os.path.join(nav2_dir, 'launch') 
-  static_map_path = os.path.join(pkg_share, 'maze_map_left.yaml')
+  static_map_path = os.path.join(pkg_share, 'maps', 'maze_map_left.yaml')
   nav2_params_path = os.path.join(pkg_share, 'params', 'nav2_params.yaml')
   nav2_bt_path = FindPackageShare(package='nav2_bt_navigator').find('nav2_bt_navigator')
   behavior_tree_xml_path = os.path.join(nav2_bt_path, 'behavior_trees', 'navigate_w_replanning_and_recovery.xml')
@@ -104,7 +104,7 @@ def generate_launch_description():
     
   declare_use_sim_time_cmd = DeclareLaunchArgument(
     name='use_sim_time',
-    default_value='false',
+    default_value='True',
     description='Use simulation (Gazebo) clock if true')
 
    
@@ -164,3 +164,5 @@ def generate_launch_description():
   ld.add_action(start_wpfollow)
   
   return ld
+
+
