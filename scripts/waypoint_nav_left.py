@@ -73,6 +73,7 @@ def main():
         #Necessary half way pose
         [2.6, 0.1, 0.0],
         [1.8, 0.6, 0.78],
+        [1.1, 0.134, 0.0],
         #Head back to origin
         [-0.5, -0.5, 0.0]]
 
