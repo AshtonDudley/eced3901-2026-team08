@@ -99,32 +99,31 @@ private:
                 std::string line = buffer.substr(0, pos);
                 buffer.erase(0, pos + 1);
 
-                if(line.empty()) continue; 
-                if(!line.empty() && line[0] == ','){
-                    line = "0" + line;
-                }
+                if(line.empty()) continue;
 
-                std::vector<int> distances;
-                std::stringstream ss(line);
-                std::string token;
-
-                while(std::getline(ss, token, ',')){
-                    if(token.empty()){
-                        distances.push_back(0);
-                    } else {
-                        try {
-                            distances.push_back(std::stoi(token));
-                        } catch (...) {
-                            distances.push_back(0);
-                        }
+                // Check for Dist1
+                if(line.find("Dist1") != std::string::npos){
+                    try{
+                        int value = std::stoi(line.substr(line.find(":") + 1));
+                        std_msgs::msg::Int32 msg;
+                        msg.data = value;
+                        publisher_[0]->publish(msg);
+                    }
+                    catch(...){
+                        RCLCPP_WARN(this->get_logger(), "Failed to parse line: %s", line.c_str());
                     }
                 }
 
-                if(distances.size() == publisher_.size()){
-                    for(size_t i = 0; i < publisher_.size(); ++i){
+                // Check for Dist2
+                else if(line.find("Dist2") != std::string::npos){
+                    try{
+                        int value = std::stoi(line.substr(line.find(":") + 1));
                         std_msgs::msg::Int32 msg;
-                        msg.data = distances[i];
-                        publisher_[i]->publish(msg);
+                        msg.data = value;
+                        publisher_[1]->publish(msg);
+                    }
+                    catch(...){
+                        RCLCPP_WARN(this->get_logger(), "Failed to parse line: %s", line.c_str());
                     }
                 }
             }
