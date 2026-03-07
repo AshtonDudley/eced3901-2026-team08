@@ -22,8 +22,8 @@ using namespace std::chrono_literals;
 class SerialBridgeNode : public rclcpp::Node {
 public:
     SerialBridgeNode() : Node("serial_bridge_node") {
-        publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("[TOPIC] distance0", 10));
-        publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("[TOPIC] distance1", 10));
+        publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("[TOPIC] distance0 :", 10));
+        publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("[TOPIC] distance1 : ", 10));
 
         // Start Outputting
         RCLCPP_INFO(this->get_logger(), "=============================================");
