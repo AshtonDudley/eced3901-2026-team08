@@ -28,7 +28,7 @@ public:
 
         // Start Outputting
         RCLCPP_INFO(this->get_logger(), "=============================================");
-        RCLCPP_INFO(this->get_logger(), "Serial Bridge Node Started");
+        RCLCPP_INFO(this->get_logger(), "UART Bridge Started");
         RCLCPP_INFO(this->get_logger(), "=============================================");
         
         // open connection to linux serial device, should be ttyUSB4 if only one UART bus is activated.
@@ -42,11 +42,12 @@ public:
             return;
         }
 
-        // set 115200 baud for Serial Port
         struct termios tty{};
         if(tcgetattr(serial_port_, &tty) != 0) {
             RCLCPP_ERROR(this->get_logger(), "Error from tcgetattr: %s", strerror(errno));
         }
+
+        // set 115200 baud for Serial Port
         cfsetospeed(&tty, B115200);
         cfsetispeed(&tty, B115200);
 
