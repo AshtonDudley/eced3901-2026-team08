@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <fcntl.h>
 #include <errno.h>
@@ -33,14 +34,16 @@ public:
         // open connection to linux serial device, should be ttyUSB4 if only one UART bus is activated.
         // for multiple UART nodes, we'll publish to multiple topics. 
         
-        serial_port_ = open("/dev/ttyUSB4", O_RDWR | O_NOCTTY);
+        serial_port_ = open("/dev/ttyUSB4", O_RDWR | O_NOCTTY | O_NONBLOCK);
 
         if(serial_port_ < 0) {
             RCLCPP_ERROR(this->get_logger(), "Error %i from open: %s", errno, strerror(errno));
+            rclcpp::shutdown();
+            return;
         }
 
         // set 115200 baud for Serial Port
-        struct termios tty;
+        struct termios tty{};
         if(tcgetattr(serial_port_, &tty) != 0) {
             RCLCPP_ERROR(this->get_logger(), "Error from tcgetattr: %s", strerror(errno));
         }
@@ -63,8 +66,12 @@ public:
         tty.c_cc[VMIN] = 0;
         tty.c_cc[VTIME] = 10;
 
-        // Clear buffer
-        tcsetattr(serial_port_, TCSANOW, &tty);
+
+        // Check and Flush Bugger
+        if (tcsetattr(serial_port_, TCSANOW, &tty) != 0) {
+            RCLCPP_ERROR(this->get_logger(), "Error setting termios: %s", strerror(errno));
+        }
+        tcflush(serial_port_, TCIFLUSH);
 
         // Ceate timer loop to read serial
         timer_ = this->create_wall_timer(10ms, std::bind(&SerialBridgeNode::read_serial, this));
