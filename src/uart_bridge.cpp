@@ -119,14 +119,12 @@ private:
                     }
                 }
 
-                while(distances.size() < publisher_.size()){
-                    distances.push_back(0);
-                }
-
-                for(size_t i = 0; i < publisher_.size(); ++i){
-                    std_msgs::msg::Int32 msg;
-                    msg.data = distances[i];
-                    publisher_[i]->publish(msg);
+                if(distances.size() == publisher_.size()){
+                    for(size_t i = 0; i < publisher_.size(); ++i){
+                        std_msgs::msg::Int32 msg;
+                        msg.data = distances[i];
+                        publisher_[i]->publish(msg);
+                    }
                 }
             }
         }
