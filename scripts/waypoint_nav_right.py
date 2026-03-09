@@ -62,26 +62,26 @@ def main():
     # [ X-pos, Y-pos, Theta-yaw ]
     inspection_route = [
         #Necessary half way poses
-        [1.35, -0.65, 0.0],
-        [2.0, -0.5, 0.0],
-        [2.5, 0.0, 0.0],
+        [2.6, 0.1, 3.14],
+        [1.8, 0.6, 0.78],
         #Drop off cargo
         #[3.85, 0.6, 1.57],
         #Reset
         #[2.8, 0.3, 3.14],
         #Pick up cargo
-        [3.2, 0.03, 3.14],
+        [0.0, 0.0, 0.0],
         #Necessary half way pose
-        [1.90, -0.65, 3.14],
-        [1.35, -0.65, 3.14],
+        [1.8, 0.6, 0.78],
         #Head back to origin
-        [-0.5, 0.0, 0.0]]
+        [2.6, 0.1, 3.14],
+        [3.5, 0.0, 0.0]]
+    
 
     # Set our demo's initial pose
     initial_pose = PoseStamped()
     initial_pose.header.frame_id = 'map'
     initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-    initial_pose.pose.position.x = 0.0
+    initial_pose.pose.position.x = 3.25
     initial_pose.pose.position.y = 0.0
     initial_pose.pose.orientation.z = 0.0
     initial_pose.pose.orientation.w = 0.0
