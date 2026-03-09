@@ -63,8 +63,8 @@ def main():
     inspection_route = [
         #Necessary half way poses
         #[2.6, 0.1, 3.14],
-        [1.6, 0.6, 3.14],
-        [1.1, 0.1, 3.14],
+        [2.3, 0.6, 3.14],
+        [1.25, 0.2, 3.14],
         #Drop off cargo
         #[3.85, 0.6, 1.57],
         #Reset
