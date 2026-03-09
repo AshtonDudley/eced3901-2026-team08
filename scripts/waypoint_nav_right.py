@@ -64,7 +64,7 @@ def main():
         #Necessary half way poses
         [1.35, -0.65, 0.0],
         [2.0, -0.5, 0.0],
-        [2.5, 0.0, 0.0],
+        [2.30, -0.10, 0.0],
         #Drop off cargo
         #[3.85, 0.6, 1.57],
         #Reset
