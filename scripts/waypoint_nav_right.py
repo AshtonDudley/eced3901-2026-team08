@@ -47,7 +47,7 @@ def generate_launch_description():
                     arguments=[
                         'topic', 'pub', '/initialpose', 'geometry_msgs/PoseWithCovarianceStamped',
                         '{header: {frame_id: map}, pose: {pose: {position: {x: 3.25, y: 0.5, z: 0.0}, '
-                        'orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}, '
+                        'orientation: {x: 0.0, y: 0.0, z: 1.0, w: 0.0}}, '
                         'covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}}',
                         '--once'
                     ],
