@@ -32,30 +32,6 @@ collecting information about stock quantity and location.
 # Author: AutomaticAddison.com
 import numpy as np # Scientific computing library for Python
 
-from launch import LaunchDescription
-from launch_ros.actions import Node
-from launch.actions import TimerAction
-
-def generate_launch_description():
-    return LaunchDescription([
-        TimerAction(
-            period=2.0,  # wait 2 seconds for map to load
-            actions=[
-                Node(
-                    package='rclpy',
-                    executable='ros2 topic pub',
-                    arguments=[
-                        'topic', 'pub', '/initialpose', 'geometry_msgs/PoseWithCovarianceStamped',
-                        '{header: {frame_id: map}, pose: {pose: {position: {x: 3.25, y: 0.5, z: 0.0}, '
-                        'orientation: {x: 0.0, y: 0.0, z: 1.0, w: 0.0}}, '
-                        'covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}}',
-                        '--once'
-                    ],
-                )
-            ]
-        )
-    ])
-
 def get_quaternion_from_euler(roll, pitch, yaw):
   """
   Convert an Euler angle to a quaternion.
@@ -86,19 +62,18 @@ def main():
     # [ X-pos, Y-pos, Theta-yaw ]
     inspection_route = [
         #Necessary half way poses
-        #[2.6, 0.1, 3.14],
-        [2.3, 0.6, 3.14],
-        [1.25, 0.2, 3.14],
+        [2.6, 0.1, 3.14],
+        [1.8, 0.6, 0.78],
         #Drop off cargo
         #[3.85, 0.6, 1.57],
         #Reset
         #[2.8, 0.3, 3.14],
         #Pick up cargo
-        [-0.05, -0.05, 0.0],
+        [0.0, 0.0, 0.0],
         #Necessary half way pose
-        [1.8, 0.65, 0.00],
+        [1.8, 0.6, 0.78],
         #Head back to origin
-        [2.6, 0.1, 0.0],
+        [2.6, 0.1, 3.14],
         [3.5, 0.0, 0.0]]
     
 
@@ -106,8 +81,8 @@ def main():
     initial_pose = PoseStamped()
     initial_pose.header.frame_id = 'map'
     initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-    initial_pose.pose.position.x = 3.3
-    initial_pose.pose.position.y = 0.0
+    initial_pose.pose.position.x = 3.25
+    initial_pose.pose.position.y = 0.5
     initial_pose.pose.orientation.z = 0.0
     initial_pose.pose.orientation.w = 0.0
     navigator.setInitialPose(initial_pose)

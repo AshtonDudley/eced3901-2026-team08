@@ -13,7 +13,22 @@ from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+#Launch position
+from launch.actions import ExecuteProcess
+
 def generate_launch_description():
+
+  #Launch position
+
+
+  set_initial_pose_cmd = ExecuteProcess(
+    cmd=[
+        'ros2', 'topic', 'pub', '-1', '/initialpose',
+        'geometry_msgs/msg/PoseWithCovarianceStamped',
+        '{"header": {"frame_id": "map"}, "pose": {"pose": {"position": {"x": 3.25, "y": 0.0, "z": 0.0}, "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}, "covariance": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}}'
+    ],
+    output='screen'
+)
 
   # Set the path to different files and folders.
   pkg_share = FindPackageShare(package='eced3901').find('eced3901')
@@ -139,10 +154,12 @@ def generate_launch_description():
     executable='waypoint_nav_right.py',
     name='wp_follower',
     output='screen') 
-  
-  
+
   # Create the launch description and populate
   ld = LaunchDescription()
+
+  #launch position
+  ld.add_action(set_initial_pose_cmd)
 
   # Declare the launch options
   ld.add_action(declare_namespace_cmd)
