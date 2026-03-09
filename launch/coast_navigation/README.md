@@ -7,5 +7,7 @@ Coast Naviagtion User Instruction
 
 ```bash
 ros2 launch dalmotor robot.launch.py
-ros2 launch eced3901 coast.launch.py
+ros2 launch eced3901 coast.launch.py direction:=right
+ros2 launch eced3901 coast.launch.py direction:=left
+
 ```

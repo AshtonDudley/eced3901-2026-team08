@@ -31,7 +31,31 @@ collecting information about stock quantity and location.
 # This fxn converts Euler angles to a quaternion.
 # Author: AutomaticAddison.com
 import numpy as np # Scientific computing library for Python
- 
+
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch.actions import TimerAction
+
+def generate_launch_description():
+    return LaunchDescription([
+        TimerAction(
+            period=2.0,  # wait 2 seconds for map to load
+            actions=[
+                Node(
+                    package='rclpy',
+                    executable='ros2 topic pub',
+                    arguments=[
+                        'topic', 'pub', '/initialpose', 'geometry_msgs/PoseWithCovarianceStamped',
+                        '{header: {frame_id: map}, pose: {pose: {position: {x: 3.25, y: 0.5, z: 0.0}, '
+                        'orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}, '
+                        'covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}}}',
+                        '--once'
+                    ],
+                )
+            ]
+        )
+    ])
+
 def get_quaternion_from_euler(roll, pitch, yaw):
   """
   Convert an Euler angle to a quaternion.
