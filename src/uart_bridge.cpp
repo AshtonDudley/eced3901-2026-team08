@@ -17,7 +17,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
+//#include "sensor_msgs/msg/laser_scan.hpp"
 
 using namespace std::chrono_literals;
 
@@ -28,7 +28,7 @@ public:
         publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("distance1", 10));
 
         //subscribe to scan topic
-        scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan",rclcpp::SensorDataQoS(),std::bind(&SerialBridgeNode::scan_callback, this, std::placeholders::_1));
+        //scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan",rclcpp::SensorDataQoS(),std::bind(&SerialBridgeNode::scan_callback, this, std::placeholders::_1));
 
         // Start Outputting
         RCLCPP_INFO(this->get_logger(), "=============================================");
@@ -80,7 +80,7 @@ public:
 
         // Ceate timer loop to read serial
         read_timer_ = this->create_wall_timer(10ms, std::bind(&SerialBridgeNode::read_serial, this));
-        write_timer_ = this->create_wall_timer(200ms, std::bind(&SerialBridgeNode::write_serial, this));
+        //write_timer_ = this->create_wall_timer(200ms, std::bind(&SerialBridgeNode::write_serial, this));
     }
 
     ~SerialBridgeNode(){ 
@@ -134,8 +134,8 @@ private:
             }
         }
     }
+    /*
     void write_serial(){
-        /*
         if(scan_data_min_ >= 0.0){
             std::stringstream ss;
             ss << "[TOPIC] LiDAR:" << std::fixed << std::setprecision(2) << scan_data_min_ << "\n";
@@ -148,11 +148,7 @@ private:
                 }
             }
         }
-        */
-        std::string data = "[TOPIC] LiDAR: 9.99\n"; 
-        write(serial_port_, data.c_str(), data.size());
     }
-
     float scan_data_min_ = -1.0;
     void scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
         float min_dist = msg->range_max;
@@ -163,18 +159,18 @@ private:
         }
         scan_data_min_ = min_dist;
     };
-
+    */
     std::vector<rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr> publisher_;
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+    //rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
     rclcpp::TimerBase::SharedPtr read_timer_;
-    rclcpp::TimerBase::SharedPtr write_timer_;
+    //rclcpp::TimerBase::SharedPtr write_timer_;
     int serial_port_;
 };
 
 int main(int argc, char * argv[]){
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<SerialBridgeNode>();
-    rclcpp::spin(node);
+    //auto node = std::make_shared<SerialBridgeNode>();
+    //rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }
