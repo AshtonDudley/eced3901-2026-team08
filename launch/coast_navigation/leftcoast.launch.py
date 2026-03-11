@@ -121,7 +121,25 @@ def generate_launch_description():
     executable='rviz2',
     name='rviz2',
     output='screen',
-    arguments=['-d', rviz_config_file])    
+    arguments=['-d', rviz_config_file])  
+
+  start_slam_delayed = TimerAction(
+    period=3.0,  # wait for Gazebo to fully load
+    actions=[
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(
+                    get_package_share_directory('slam_toolbox'),
+                    "launch",
+                    "online_async_launch.py"
+                )
+            ),
+            launch_arguments={
+                'use_sim_time': use_sim_time
+            }.items()
+        )
+    ]
+  )  
 
   # Launch the ROS 2 Navigation Stack
   # start_ros2_navigation_cmd = IncludeLaunchDescription(
@@ -156,7 +174,7 @@ def generate_launch_description():
             }.items()
         )
     ]
-)
+  )
 
   
   # Launch WP follower
@@ -187,6 +205,8 @@ def generate_launch_description():
 #new to fix bond timer
 
   ld.add_action(start_nav2_delayed)
+  ld.add_action(start_slam_delayed)
+
 
   # Add any actions
   ld.add_action(start_rviz_cmd)
