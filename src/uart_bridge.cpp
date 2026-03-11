@@ -135,6 +135,7 @@ private:
         }
     }
     void write_serial(){
+        /*
         if(scan_data_min_ >= 0.0){
             std::stringstream ss;
             ss << "[TOPIC] LiDAR:" << std::fixed << std::setprecision(2) << scan_data_min_ << "\n";
@@ -147,6 +148,9 @@ private:
                 }
             }
         }
+        */
+        std::string data = "[TOPIC] LiDAR: 9.99\n"; 
+        write(serial_port_, data.c_str(), data.size());
     }
 
     float scan_data_min_ = -1.0;
