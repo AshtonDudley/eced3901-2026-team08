@@ -38,7 +38,7 @@ public:
         // open connection to linux serial device, should be ttyUSB4 if only one UART bus is activated.
         // for multiple UART nodes, we'll publish to multiple topics. 
         
-        serial_port_ = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK);
+        serial_port_ = open("/dev/ttyUSB4", O_RDWR | O_NOCTTY | O_NONBLOCK);
 
         if(serial_port_ < 0){
             RCLCPP_ERROR(this->get_logger(), "Error %i from open: %s", errno, strerror(errno));
