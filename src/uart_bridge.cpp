@@ -17,7 +17,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
+#include "sensor_msgs/msg/laserscan.hpp"
 
 using namespace std::chrono_literals;
 
@@ -28,7 +28,7 @@ public:
         publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("distance1", 10));
 
         //subscribe to scan topic
-        scan_sub_ = this->create_subscription<sensor_msgs::msg::Laser_Scan>("/scan",10,std::bind(&SerialBridgeNode::scan_callback, this, std::placeholders::_1));
+        scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan",10,std::bind(&SerialBridgeNode::scan_callback, this, std::placeholders::_1));
 
         // Start Outputting
         RCLCPP_INFO(this->get_logger(), "=============================================");
