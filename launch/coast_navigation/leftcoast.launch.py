@@ -13,6 +13,10 @@ from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+#new to fix bond timer
+from launch.actions import TimerAction
+from ament_index_python.packages import get_package_share_directory
+
 def generate_launch_description():
 
   # Set the path to different files and folders.
@@ -39,7 +43,7 @@ def generate_launch_description():
   slam = LaunchConfiguration('slam')
   use_namespace = LaunchConfiguration('use_namespace')
   use_rviz = LaunchConfiguration('use_rviz')
-  #use_sim_time = LaunchConfiguration('use_sim_time')
+  use_sim_time = LaunchConfiguration('use_sim_time')
 
   
   # Map fully qualified names to relative ones so the node's namespace can be prepended.
@@ -102,10 +106,10 @@ def generate_launch_description():
     default_value='True',
     description='Whether to start RVIZ')
     
-  # declare_use_sim_time_cmd = DeclareLaunchArgument(
-  #   name='use_sim_time',
-  #   default_value='True',
-  #   description='Use simulation (Gazebo) clock if true')
+  declare_use_sim_time_cmd = DeclareLaunchArgument(
+    name='use_sim_time',
+    default_value='True',
+    description='Use simulation (Gazebo) clock if true')
 
    
   # Specify the actions
@@ -120,16 +124,39 @@ def generate_launch_description():
     arguments=['-d', rviz_config_file])    
 
   # Launch the ROS 2 Navigation Stack
-  start_ros2_navigation_cmd = IncludeLaunchDescription(
-    PythonLaunchDescriptionSource(os.path.join(nav2_launch_dir, 'bringup_launch.py')),
-    launch_arguments = {'namespace': namespace,
-                        'use_namespace': use_namespace,
-                        'slam': slam,
-                        'map': map_yaml_file,
-                        #'use_sim_time': use_sim_time,
-                        'params_file': params_file,
-                        'default_bt_xml_filename': default_bt_xml_filename,
-                        'autostart': autostart}.items())
+  # start_ros2_navigation_cmd = IncludeLaunchDescription(
+  #   PythonLaunchDescriptionSource(os.path.join(nav2_launch_dir, 'bringup_launch.py')),
+  #   launch_arguments = {'namespace': namespace,
+  #                       'use_namespace': use_namespace,
+  #                       'slam': slam,
+  #                       'map': map_yaml_file,
+  #                       'use_sim_time': use_sim_time,
+  #                       'params_file': params_file,
+  #                       'default_bt_xml_filename': default_bt_xml_filename,
+  #                       'autostart': autostart}.items())
+
+#new to fix bond timer
+
+  start_nav2_delayed = TimerAction(
+    period=6.0,  # wait until SLAM is running
+    actions=[
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(nav2_launch_dir, 'bringup_launch.py')
+            ),
+            launch_arguments={
+                'namespace': namespace,
+                'use_namespace': use_namespace,
+                'slam': slam,
+                'map': map_yaml_file,
+                'use_sim_time': use_sim_time,
+                'params_file': params_file,
+                'default_bt_xml_filename': default_bt_xml_filename,
+                'autostart': autostart
+            }.items()
+        )
+    ]
+)
 
   
   # Launch WP follower
@@ -155,12 +182,15 @@ def generate_launch_description():
   ld.add_action(declare_rviz_config_file_cmd)
   ld.add_action(declare_slam_cmd)
   ld.add_action(declare_use_rviz_cmd) 
-  #ld.add_action(declare_use_sim_time_cmd)
+  ld.add_action(declare_use_sim_time_cmd)
 
+#new to fix bond timer
+
+  ld.add_action(start_nav2_delayed)
 
   # Add any actions
   ld.add_action(start_rviz_cmd)
-  ld.add_action(start_ros2_navigation_cmd)
+  #ld.add_action(start_ros2_navigation_cmd)
   ld.add_action(start_wpfollow)
   
   return ld
