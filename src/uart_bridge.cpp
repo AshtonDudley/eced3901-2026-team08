@@ -28,7 +28,7 @@ public:
         publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("distance1", 10));
 
         //subscribe to scan topic
-        scan_sub_ = this->create_subscription<std_msgs::msg::Laser_Scan>("/scan",10,std::bind(&SerialBridgeNode::scan_callback, this, std::placeholders::_1));
+        scan_sub_ = this->create_subscription<sensor_msgs::msg::Laser_Scan>("/scan",10,std::bind(&SerialBridgeNode::scan_callback, this, std::placeholders::_1));
 
         // Start Outputting
         RCLCPP_INFO(this->get_logger(), "=============================================");
