@@ -39,7 +39,7 @@ def generate_launch_description():
   slam = LaunchConfiguration('slam')
   use_namespace = LaunchConfiguration('use_namespace')
   use_rviz = LaunchConfiguration('use_rviz')
-  use_sim_time = LaunchConfiguration('use_sim_time')
+  #use_sim_time = LaunchConfiguration('use_sim_time')
 
   
   # Map fully qualified names to relative ones so the node's namespace can be prepended.
@@ -102,10 +102,10 @@ def generate_launch_description():
     default_value='True',
     description='Whether to start RVIZ')
     
-  declare_use_sim_time_cmd = DeclareLaunchArgument(
-    name='use_sim_time',
-    default_value='True',
-    description='Use simulation (Gazebo) clock if true')
+  # declare_use_sim_time_cmd = DeclareLaunchArgument(
+  #   name='use_sim_time',
+  #   default_value='True',
+  #   description='Use simulation (Gazebo) clock if true')
 
    
   # Specify the actions
@@ -126,7 +126,7 @@ def generate_launch_description():
                         'use_namespace': use_namespace,
                         'slam': slam,
                         'map': map_yaml_file,
-                        'use_sim_time': use_sim_time,
+                        #'use_sim_time': use_sim_time,
                         'params_file': params_file,
                         'default_bt_xml_filename': default_bt_xml_filename,
                         'autostart': autostart}.items())
@@ -136,7 +136,7 @@ def generate_launch_description():
   start_wpfollow = Node(
     condition=IfCondition(use_rviz),
     package='eced3901',
-    executable='waypoint_nav_left.py',
+    executable='pose_navigation_left.py',
     name='wp_follower',
     output='screen') 
   
@@ -155,7 +155,7 @@ def generate_launch_description():
   ld.add_action(declare_rviz_config_file_cmd)
   ld.add_action(declare_slam_cmd)
   ld.add_action(declare_use_rviz_cmd) 
-  ld.add_action(declare_use_sim_time_cmd)
+  #ld.add_action(declare_use_sim_time_cmd)
 
 
   # Add any actions
