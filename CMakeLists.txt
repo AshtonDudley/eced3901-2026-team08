@@ -15,6 +15,7 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 # Create Cpp executable
 add_executable(talker src/publisher_member_function.cpp)
@@ -24,7 +25,7 @@ add_executable(dt1 src/eced3901_dt1.cpp)
 ament_target_dependencies(dt1 rclcpp std_msgs nav_msgs geometry_msgs tf2)
 
 add_executable(uart_bridge src/uart_bridge.cpp)
-ament_target_dependencies(uart_bridge rclcpp std_msgs)
+ament_target_dependencies(uart_bridge rclcpp std_msgs sensor_msgs)
 
 
 # Install Cpp executables
