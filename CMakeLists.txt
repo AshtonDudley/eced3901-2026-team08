@@ -54,6 +54,7 @@ install(PROGRAMS
   scripts/right_coast.py
   scripts/left_coast.py
   scripts/switch.py
+  scripts/uart_bridge.py
   DESTINATION lib/${PROJECT_NAME})
 
 
