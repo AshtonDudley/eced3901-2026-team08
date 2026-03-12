@@ -66,8 +66,8 @@ def main():
         #[2.6, 0.1, 0.0],
         #Drop off cargo
         [3.50, 0.0, 3.14],
-        [2.0, 0.6, 0.0], 
-        [0.0, 0.0, 0.0]]
+        [2.0, 0.6, 3.14],
+        [0.0, -0.5, 0.0]]
 
     # Set our demo's initial pose
     # initial_pose = PoseStamped()
