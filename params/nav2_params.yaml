@@ -137,7 +137,7 @@ controller_server:
       debug_trajectory_details: True
       min_vel_x: 0.0
       min_vel_y: 0.0
-      max_vel_x: 0.15
+      max_vel_x: 0.2 #was 0.15
       max_vel_y: 0.0
       max_vel_theta: 0.5
       min_speed_xy: 0.0
@@ -287,7 +287,7 @@ planner_server:
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
-      tolerance: 0.3 #originally 0.5
+      tolerance: 1.0
       use_astar: false
       allow_unknown: true
 
