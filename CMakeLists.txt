@@ -48,6 +48,7 @@ install(
 install(PROGRAMS
 #  scripts/wp_follower.py
   scripts/demo_inspection.py
+  scripts/team_qualification_nav.py
   DESTINATION lib/${PROJECT_NAME})
 
 
