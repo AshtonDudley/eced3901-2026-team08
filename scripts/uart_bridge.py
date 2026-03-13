@@ -19,9 +19,6 @@ class SerialBridgeNode(Node):
         self.pub_distance0 = self.create_publisher(Int32, 'distance0', 10)
         self.pub_distance1 = self.create_publisher(Int32, 'distance1', 10)
 
-        # subscribe to scan topic
-        # self.scan_sub = self.create_subscription(LaserScan, '/scan', self.scan_callback, rclpy.qos.qos_profile_sensor_data)
-
         # Start Outputting
         self.get_logger().info("=============================================")
         self.get_logger().info("UART Bridge Started")
@@ -48,9 +45,6 @@ class SerialBridgeNode(Node):
 
         # Create timer loop to read serial
         self.read_timer = self.create_timer(0.01, self.read_serial) # 10ms
-        # self.write_timer = self.create_timer(0.2, self.write_serial) # 200ms
-
-        # self.scan_data_min = -1.0
 
     def destroy_node(self):
         # Close the serial port on shutdown
@@ -99,27 +93,6 @@ class SerialBridgeNode(Node):
                             
         except Exception as e:
             self.get_logger().error(f"Serial read error: {e}")
-
-    #def write_serial(self):
-    #    if hasattr(self, 'serial_port') and self.serial_port.is_open:
-    #        try:
-    #            self.serial_port.write(data.encode('utf-8'))
-    #        except Exception as e:
-    #            self.get_logger().error(f"Error writing: {e}")
-    #    else
-    #        self.get_logger().error("Serial port not open for writing")
-
-    #def lidar_min_distance(self, scan_msg):
-    #    if self.scan_data_min >= 0.0
-    #        format_str = f"[TOPIC] LiDAR:{self.scan_data_min:.2f}\n"
-    #        self.write_serial(format_str)
-
-    #def scan_callback(self, msg):
-    #    min_dist = msg.range_max
-    #    for range_val in msg.ranges:
-    #        if msg.range_min < range_val < min_dist:
-    #            min_dist = range_val
-    #    self.scan_data_min = min_dist
 
 def main(args=None):
     rclpy.init(args=args)
