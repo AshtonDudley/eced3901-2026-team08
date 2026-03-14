@@ -101,7 +101,7 @@ class SerialBridgeNode(Node):
                             scan_msg.scan_time = 0.0
                             scan_msg.range_min = 0.0
                             scan_msg.range_max = 4.0
-                            scan_msg.ranges = [float(msg.data)]
+                            scan_msg.ranges = [float(msg.data)/100.0]
                             scan_msg.intensities = [1.0]
                             self.pub_ultrasonic.publish(scan_msg)
                         except Exception:
