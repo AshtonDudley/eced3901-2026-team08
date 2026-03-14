@@ -1,7 +1,7 @@
 // Author: Alexandre DesAulniers
 // Last Updated, Feb 11th 2026 @ 11:08AM
 // Edits: Liam Legge
-
+/*
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -57,12 +57,12 @@ public:
         cfsetispeed(&tty, B115200);
 
         // Read Flags
-        tty.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
+        tty.c_cflag |= (CLOCAL | CREAD);    // ignore modem controls
         tty.c_cflag &= ~CSIZE;
-        tty.c_cflag |= CS8;                 /* 8-bit characters */
-        tty.c_cflag &= ~PARENB;             /* no parity bit */
-        tty.c_cflag &= ~CSTOPB;             /* only need 1 stop bit */
-        tty.c_cflag &= ~CRTSCTS;            /* no hardware flowcontrol */
+        tty.c_cflag |= CS8;                 // 8-bit characters
+        tty.c_cflag &= ~PARENB;             // no parity bit
+        tty.c_cflag &= ~CSTOPB;             // only need 1 stop bit
+        tty.c_cflag &= ~CRTSCTS;            // no hardware flowcontrol
 
         tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
         tty.c_iflag &= ~(IXON | IXOFF | IXANY);
@@ -162,3 +162,4 @@ int main(int argc, char * argv[]){
     rclcpp::shutdown();
     return 0;
 }
+*/
