@@ -17,7 +17,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
+//#include "sensor_msgs/msg/laser_scan.hpp"
 
 using namespace std::chrono_literals;
 
@@ -26,7 +26,6 @@ public:
     SerialBridgeNode() : Node("serial_bridge_node"){
         publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("distance0", 10));
         publisher_.push_back(this->create_publisher<std_msgs::msg::Int32>("distance1", 10));
-        scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("ultrasonic_scan", 10);
 
         //subscribe to scan topic
         //scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan",rclcpp::SensorDataQoS(),std::bind(&SerialBridgeNode::scan_callback, this, std::placeholders::_1));
@@ -57,12 +56,12 @@ public:
         cfsetispeed(&tty, B115200);
 
         // Read Flags
-        tty.c_cflag |= (CLOCAL | CREAD);    // ignore modem controls
+        tty.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
         tty.c_cflag &= ~CSIZE;
-        tty.c_cflag |= CS8;                 // 8-bit characters
-        tty.c_cflag &= ~PARENB;             // no parity bit
-        tty.c_cflag &= ~CSTOPB;             // only need 1 stop bit
-        tty.c_cflag &= ~CRTSCTS;            // no hardware flowcontrol
+        tty.c_cflag |= CS8;                 /* 8-bit characters */
+        tty.c_cflag &= ~PARENB;             /* no parity bit */
+        tty.c_cflag &= ~CSTOPB;             /* only need 1 stop bit */
+        tty.c_cflag &= ~CRTSCTS;            /* no hardware flowcontrol */
 
         tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
         tty.c_iflag &= ~(IXON | IXOFF | IXANY);
@@ -81,6 +80,7 @@ public:
 
         // Ceate timer loop to read serial
         read_timer_ = this->create_wall_timer(10ms, std::bind(&SerialBridgeNode::read_serial, this));
+        //write_timer_ = this->create_wall_timer(200ms, std::bind(&SerialBridgeNode::write_serial, this));
     }
 
     ~SerialBridgeNode(){ 
@@ -126,21 +126,6 @@ private:
                         std_msgs::msg::Int32 msg;
                         msg.data = value;
                         publisher_[1]->publish(msg);
-
-                        // Publish as LaserScan
-                        sensor_msgs::msg::LaserScan scan_msg;
-                        scan_msg.header.frame_id = "lidar_link";
-                        scan_msg.header.stamp = this->get_clock()->now();
-                        scan_msg.angle_min = 0.0;
-                        scan_msg.angle_max = 0.0;
-                        scan_msg.angle_increment = 0.0;
-                        scan_msg.time_increment = 0.0;
-                        scan_msg.scan_time = 0.0;
-                        scan_msg.range_min = 0.0;
-                        scan_msg.range_max = 4.0;
-                        scan_msg.ranges.push_back(static_cast<float>(value) / 100.0); // Convert cm to meters for RViz
-                        scan_msg.intensities.push_back(1.0);
-                        publisher_[2]->publish(scan_msg);
                     }
                     catch(...){
                         RCLCPP_WARN(this->get_logger(), "Failed to parse line: %s", line.c_str());
@@ -149,18 +134,43 @@ private:
             }
         }
     }
+    /*
+    void write_serial(){
+        if(scan_data_min_ >= 0.0){
+            std::stringstream ss;
+            ss << "[TOPIC] LiDAR:" << std::fixed << std::setprecision(2) << scan_data_min_ << "\n";
+            std::string data = ss.str();
+
+            if(serial_port_ >= 0){
+                ssize_t byte_write = write(serial_port_, data.c_str(), data.size());
+                if(byte_write < 0 && errno != EAGAIN){
+                    RCLCPP_ERROR(this->get_logger(), "Error writing: %s", strerror(errno));
+                }
+            }
+        }
+    }
+    float scan_data_min_ = -1.0;
+    void scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
+        float min_dist = msg->range_max;
+        for(auto range : msg->ranges){
+            if(range < min_dist && range > msg->range_min){
+                min_dist = range;
+            }
+        }
+        scan_data_min_ = min_dist;
+    };
+    */
     std::vector<rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr> publisher_;
-    rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub_;
+    //rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
     rclcpp::TimerBase::SharedPtr read_timer_;
+    //rclcpp::TimerBase::SharedPtr write_timer_;
     int serial_port_;
 };
 
 int main(int argc, char * argv[]){
-    /*
     rclcpp::init(argc, argv);
     auto node = std::make_shared<SerialBridgeNode>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
-    */
 }
