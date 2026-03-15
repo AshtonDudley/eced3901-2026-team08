@@ -142,8 +142,8 @@ Visualization Manager:
       Axis: Z
       Channel Name: intensity
       Class: rviz_default_plugins/LaserScan
-      Color: 255; 255; 0
-      Color Transformer: FlatColor
+      Color: 255; 0; 0
+      Color Transformer: Sphere
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
