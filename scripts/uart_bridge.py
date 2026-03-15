@@ -94,12 +94,12 @@ class SerialBridgeNode(Node):
                             scan_msg = LaserScan()
                             scan_msg.header.frame_id = "lidar_link"
                             scan_msg.header.stamp = self.get_clock().now().to_msg()
-                            scan_msg.angle_min = 0.0
-                            scan_msg.angle_max = 0.0
-                            scan_msg.angle_increment = 0.0
+                            scan_msg.angle_min = -0.001
+                            scan_msg.angle_max = 0.001
+                            scan_msg.angle_increment = 0.002
                             scan_msg.time_increment = 0.0
                             scan_msg.scan_time = 0.0
-                            scan_msg.range_min = 0.0
+                            scan_msg.range_min = 0.02
                             scan_msg.range_max = 4.0
                             scan_msg.ranges = [float(msg.data)/100.0]
                             scan_msg.intensities = [1.0]
