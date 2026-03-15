@@ -101,8 +101,8 @@ class SerialBridgeNode(Node):
                             scan_msg.scan_time = 0.0
                             scan_msg.range_min = 0.02
                             scan_msg.range_max = 4.0
-                            scan_msg.ranges = [float(msg.data)/100.0]
-                            scan_msg.intensities = [1.0]
+                            scan_msg.ranges = [float(msg.data)/100.0, float(msg.data)/100.0]
+                            scan_msg.intensities = [1.0, 1.0]
                             self.pub_ultrasonic.publish(scan_msg)
                         except Exception:
                             self.get_logger().warn(f"Failed to parse line: {line}")
