@@ -101,7 +101,7 @@ def main():
         # INTERRUPT CONDITION (CHANGE THIS!)
         # Demo: interrupt after reaching waypoint 1
         # -----------------------------------------------
-        if (not interrupt_triggered) and current_index >= 2:
+        if (not interrupt_triggered) and current_index >= 1:
             print("\nINTERRUPT: Switching to HOME route\n")
 
             interrupt_triggered = True
