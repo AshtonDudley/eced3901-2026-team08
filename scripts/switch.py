@@ -61,7 +61,8 @@ def main():
     # Route A — Example: go deliver cargo
     route_cargo = [
         [2.0, 0.6, 0.0],
-        [3.5, 0.0, 3.14]
+        [3.5, 0.0, 3.14],
+        [0.0, 0.0, 0.0]
     ]
 
     # Route B — Example: go home
@@ -101,7 +102,7 @@ def main():
         # INTERRUPT CONDITION (CHANGE THIS!)
         # Demo: interrupt after reaching waypoint 1
         # -----------------------------------------------
-        if (not interrupt_triggered) and current_index >= 1:
+        if (not interrupt_triggered) and current_index >= 2:
             print("\nINTERRUPT: Switching to HOME route\n")
 
             interrupt_triggered = True
