@@ -138,7 +138,7 @@ def generate_launch_description():
   start_wpfollow = Node(
     condition=IfCondition(use_rviz),
     package='eced3901',
-    executable='switching.py',
+    executable='switch.py',
     name='wp_follower',
     output='screen') 
   
