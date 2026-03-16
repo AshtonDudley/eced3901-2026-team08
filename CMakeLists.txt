@@ -49,6 +49,7 @@ install(PROGRAMS
   scripts/team_qualification_nav.py
   scripts/right_coast.py
   scripts/left_coast.py
+  scripts/switch.py
   DESTINATION lib/${PROJECT_NAME})
 
 
