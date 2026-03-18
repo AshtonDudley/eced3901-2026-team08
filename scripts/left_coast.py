@@ -71,7 +71,7 @@ def main():
         #Pick up cargo
         [3.45, 0.0, 3.14],
         #Necessary half way pose
-        [1.8, 0.6, 0.78],
+        [1.8, 0.6, 3.14],
         #Head back to origin
         [-0.5, -0.5, 0.0]]
 
