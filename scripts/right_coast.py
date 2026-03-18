@@ -25,14 +25,20 @@ from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 import rclpy
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import LaserScan
+from nav_msgs.msg import Odometry
 
 # Create Interrupt Node
 class SensorMonitor(node):
     def __init__(self):
+        # Self Node Initialize
         self.node = node
+
+        # Sensor Initialize
         self.lidar_front = None
         self.ultrasonic_front = None
         self.lidar_angle_idx = None
+        self.xpos = None
+        self.ypos = None
 
         sensor_qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -44,6 +50,7 @@ class SensorMonitor(node):
         # Subscriptions
         self.lidar_sub = node.create_subscription(LaserScan, '/scan', self.lidar_callback, sensor_qos)
         self.ultrasonic_sub = node.create_subscription(LaserScan, '/ultrasonic_scan', self.ultrasonic_callback, sensor_qos)
+        self.odom_sub = node.create_subscription(PoseStamped, '/odom', self.odom_callback, sensor_qos)
 
     def lidar_callback(self, msg):
         if self.lidar_angle_idx is None:
@@ -59,6 +66,10 @@ class SensorMonitor(node):
     def ultrasonic_callback(self, msg):
         if msg.ranges:
             self.ultrasonic_front = msg.ranges[0]
+
+    def odom_callback(self, msg):
+        self.xpos = msg.pose.position.x
+        self.ypos = msg.pose.position.y
 
     def difference(self, threshold):
         if self.lidar_front is None or self.ultrasonic_front is None:
@@ -165,9 +176,11 @@ def main():
 
         # EDIT THIS, THIS IS FROM DEEPSEEK AND NEEDS TO BE ADJUSTED
         # Check for interrupt condition
+
+
         now = navigator.get_clock().now().seconds_nanoseconds()[0]
         if last_interrupt_time is None or (now - last_interrupt_time) > COOLDOWN_SEC:
-            if sensor_monitor.difference_exceeds(DIFF_THRESHOLD):
+            if sensor_monitor.difference_exceeds(DIFF_THRESHOLD) and not (self.ypose > 3.0 and self.xpose < 0.3):
                 print('\n>>> Interrupt triggered! Difference large. <<<\n')
                 last_interrupt_time = now
                 if feedback:

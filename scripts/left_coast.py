@@ -171,7 +171,7 @@ def main():
         # Check for interrupt condition
         now = navigator.get_clock().now().seconds_nanoseconds()[0]
         if last_interrupt_time is None or (now - last_interrupt_time) > COOLDOWN_SEC:
-            if sensor_monitor.difference_exceeds(DIFF_THRESHOLD):
+            if sensor_monitor.difference_exceeds(DIFF_THRESHOLD) and not (self.ypose > 3.0 and self.xpose < 0.3):
                 print('\n>>> Interrupt triggered! Difference large. <<<\n')
                 last_interrupt_time = now
                 if feedback:
