@@ -133,6 +133,18 @@ def generate_launch_description():
                         'default_bt_xml_filename': default_bt_xml_filename,
                         'autostart': autostart}.items())
 
+  # Launch the Robot State Publisher
+  start_robot_state_publisher_cmd = Node(
+    package='robot_state_publisher',
+    executable='robot_state_publisher',
+    name='robot_state_publisher',
+    output='screen',
+    parameters=[{
+        # Command evaluates the 'model' launch configuration and reads the URDF
+        'robot_description': Command(['xacro ', model]), 
+        'use_sim_time': use_sim_time
+    }]
+  )
   
   # Launch WP follower
   start_wpfollow = Node(
@@ -168,6 +180,7 @@ def generate_launch_description():
 
 
   # Add any actions
+  ld.add_action(start_robot_state_publisher_cmd)
   ld.add_action(start_rviz_cmd)
   ld.add_action(start_ros2_navigation_cmd)
   ld.add_action(start_wpfollow)
