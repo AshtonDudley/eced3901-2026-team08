@@ -28,11 +28,7 @@ class SerialBridgeNode(Node):
         # Open connection to linux serial device
         try:
             self.serial_port = serial.Serial(
-<<<<<<< HEAD
-                port='/dev/ttyUSB4',
-=======
                 port='/dev/ttyACM0',    #/dev/ttyUSB4 for USB-Serial adapters
->>>>>>> 82fba2b39bb49726461ad27b0a2766ed7189888f
                 baudrate=115200,
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
