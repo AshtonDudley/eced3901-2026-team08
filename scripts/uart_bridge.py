@@ -93,7 +93,6 @@ class SerialBridgeNode(Node):
                             # Publish LaserScan
                             scan_msg = LaserScan()
                             scan_msg.header.frame_id = "lidar_link"
-                            scan_msg.header.stamp = self.get_clock().now().to_msg()
                             scan_msg.angle_min = -0.001
                             scan_msg.angle_max = 0.001
                             scan_msg.angle_increment = 0.002
@@ -103,6 +102,7 @@ class SerialBridgeNode(Node):
                             scan_msg.range_max = 4.0
                             scan_msg.ranges = [float(msg.data)/100.0, float(msg.data)/100.0]
                             scan_msg.intensities = [1.0, 1.0]
+                            scan_msg.header.stamp = self.get_clock().now().to_msg()
                             self.pub_ultrasonic.publish(scan_msg)
                         except Exception:
                             self.get_logger().warn(f"Failed to parse line: {line}")
