@@ -1,25 +1,13 @@
 #! /usr/bin/env python3
 # Copyright 2021 Samsung Research America
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# Updated March 12, 2026
-# By: Megan Neville
+# Updated March 12, 2026 - By: Megan Neville
+# Navigation 2 Waypoint Follower with Sensor Interrupt Override
 
 from copy import deepcopy
 import math
+import time
 import numpy as np
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist, PoseWithCovarianceStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 import rclpy
 from rclpy.node import Node
@@ -35,11 +23,6 @@ def get_quaternion_from_euler(roll, pitch, yaw):
     qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
     return [qx, qy, qz, qw]
 
-def get_yaw_from_quaternion(q):
-    siny_cosp = 2 * (q.w * q.z + q.x * q.y)
-    cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
-    return math.atan2(siny_cosp, cosy_cosp)
-
 # --- Sensor Monitor Node ---
 
 class SensorMonitor(Node):
@@ -48,6 +31,7 @@ class SensorMonitor(Node):
         self.lidar_front = None
         self.ultrasonic_front = None
         self.lidar_angle_idx = None
+        self.amcl_pose = None
 
         sensor_qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -56,8 +40,18 @@ class SensorMonitor(Node):
             depth=1
         )
 
+        # Subscribers
         self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, sensor_qos)
         self.ultrasonic_sub = self.create_subscription(LaserScan, '/ultrasonic_scan', self.ultrasonic_callback, sensor_qos)
+        
+        # Subscribe to AMCL to get the true map location
+        self.pose_sub = self.create_subscription(PoseWithCovarianceStamped, '/amcl_pose', self.pose_callback, 10)
+
+        # Publisher for Manual Motor Override
+        self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+
+    def pose_callback(self, msg):
+        self.amcl_pose = msg.pose.pose
 
     def lidar_callback(self, msg):
         if self.lidar_angle_idx is None:
@@ -66,9 +60,6 @@ class SensorMonitor(Node):
             idx = int((0.0 - msg.angle_min) / msg.angle_increment)
             if 0 <= idx < len(msg.ranges):
                 self.lidar_angle_idx = idx
-            else:
-                self.get_logger().warn("Lidar angle index out of range")
-                return
                 
         if self.lidar_angle_idx is not None and self.lidar_angle_idx < len(msg.ranges):
             self.lidar_front = msg.ranges[self.lidar_angle_idx]
@@ -80,23 +71,24 @@ class SensorMonitor(Node):
     def difference(self, threshold):
         if self.lidar_front is None or self.ultrasonic_front is None:
             return False
-        # Filter out invalid math from infinite distance readings
+            
         if math.isinf(self.lidar_front) or math.isinf(self.ultrasonic_front):
             return False
             
-        if self.lidar_front - self.ultrasonic_front < 0:
-            return False
-        return (self.lidar_front - self.ultrasonic_front) > threshold
-
+        diff = self.lidar_front - self.ultrasonic_front
+        if diff > threshold:
+            self.get_logger().warn(f"*** INTERRUPT TRIGGERED! Lidar: {self.lidar_front:.2f}m | US: {self.ultrasonic_front:.2f}m | Diff: {diff:.2f}m ***")
+            return True
+            
+        return False
 
 # --- Main Navigation Loop ---
 
 def main():
-    # Define Params
     DIFF_THRESHOLD = 0.15
-    TARGET_DISTANCE = 0.01
-    STEP_SIZE = 0.05
-    COOLDOWN_TIME = 1.0
+    TARGET_DISTANCE = 0.05 # Stopping 5cm away from the object
+    MANUAL_SPEED = 0.05    # Move at 5 cm/s during manual override
+    COOLDOWN_TIME = 10.0   # Prevent back-to-back rapid interrupts
     last_interrupt_time = None
     interrupted_waypoint_idx = None
 
@@ -140,86 +132,70 @@ def main():
         feedback = navigator.getFeedback()
         
         if feedback and i % 5 == 0:
-            print('Executing current waypoint: ' +
-                  str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
+            print(f"Executing waypoint: {feedback.current_waypoint + 1}/{len(inspection_points)}")
 
-        now = navigator.get_clock().now().seconds_nanoseconds()[0]
+        now = time.time()
         
-        # Grab current position for the exclusion zone check
-        current_pose = navigator.getCurrentPose()
-        xpose = current_pose.pose.position.x if current_pose else 0.0
-        ypose = current_pose.pose.position.y if current_pose else 0.0
+        # Grab true map coordinates from AMCL subscriber
+        xpose = sensor_monitor.amcl_pose.position.x if sensor_monitor.amcl_pose else 0.0
+        ypose = sensor_monitor.amcl_pose.position.y if sensor_monitor.amcl_pose else 0.0
 
         if last_interrupt_time is None or (now - last_interrupt_time) > COOLDOWN_TIME:
             if sensor_monitor.difference(DIFF_THRESHOLD) and not (ypose > 3.0 and xpose < 0.3):
-                print('\n>>> Interrupt triggered! Difference large. <<<\n')
-                last_interrupt_time = now
+                
+                print('\n>>> Halting Nav2 for Inspection Maneuver! <<<\n')
+                last_interrupt_time = time.time()
+                
                 if feedback:
                     interrupted_waypoint_idx = feedback.current_waypoint
                 else:
                     interrupted_waypoint_idx = 0
 
+                # 1. Cancel Nav2 task so it releases control of the motors
                 navigator.cancelTask()
                 while not navigator.isTaskComplete():
                     rclpy.spin_once(sensor_monitor, timeout_sec=0.1)
+
+                print('>>> Driving forward manually... <<<')
+                
+                # 2. Manual Motor Override: Inch forward until close
+                twist_msg = Twist()
+                twist_msg.linear.x = MANUAL_SPEED 
+                
+                start_drive = time.time()
+                # Stop if we hit target, or timeout after 10 seconds just in case
+                while (sensor_monitor.ultrasonic_front is not None and 
+                       sensor_monitor.ultrasonic_front > TARGET_DISTANCE and
+                       (time.time() - start_drive) < 10.0):
+                    sensor_monitor.cmd_vel_pub.publish(twist_msg)
+                    rclpy.spin_once(sensor_monitor, timeout_sec=0.1)
                     
-                result = navigator.getResult()
-                print(f'Cancelled with result: {result}')
+                # 3. Stop Forward Motion
+                twist_msg.linear.x = 0.0
+                sensor_monitor.cmd_vel_pub.publish(twist_msg)
 
-                if current_pose is None:
-                    print('Failed to get current pose – skipping interrupt routine')
-                else:
-                    steps = 0
-                    max_steps = 10
-                    while (sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front > TARGET_DISTANCE and steps < max_steps):
-                        yaw = get_yaw_from_quaternion(current_pose.pose.orientation)
-                        new_x = current_pose.pose.position.x + STEP_SIZE * math.cos(yaw)
-                        new_y = current_pose.pose.position.y + STEP_SIZE * math.sin(yaw)
+                print('>>> Rotating 360 degrees... <<<')
+                
+                # 4. Manual Motor Override: Rotate in place
+                twist_msg.angular.z = 0.5 # Rad/s speed
+                start_rotate = time.time()
+                rotate_duration = (2.0 * math.pi) / twist_msg.angular.z
+                
+                while (time.time() - start_rotate) < rotate_duration:
+                    sensor_monitor.cmd_vel_pub.publish(twist_msg)
+                    rclpy.spin_once(sensor_monitor, timeout_sec=0.1)
+                    
+                # 5. Stop Rotation
+                twist_msg.angular.z = 0.0
+                sensor_monitor.cmd_vel_pub.publish(twist_msg)
 
-                        goal_pose = PoseStamped()
-                        goal_pose.header.frame_id = 'map'
-                        goal_pose.header.stamp = navigator.get_clock().now().to_msg()
-                        goal_pose.pose.position.x = new_x
-                        goal_pose.pose.position.y = new_y
-                        goal_pose.pose.orientation = current_pose.pose.orientation
+                print('>>> Maneuver complete. Resuming waypoints... <<<\n')
 
-                        navigator.goToPose(goal_pose)
-
-                        while not navigator.isTaskComplete():
-                            rclpy.spin_once(sensor_monitor, timeout_sec=0.1)
-                            if (sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front <= TARGET_DISTANCE):
-                                navigator.cancelTask()
-                                break
-
-                        current_pose = navigator.getCurrentPose()
-                        steps += 1
-
-                    # Rotate ~180 degrees twice to ensure Nav2 actually spins
-                    if current_pose is not None:
-                        for rotation_offset in [math.pi, 2.0 * math.pi]:
-                            yaw = get_yaw_from_quaternion(current_pose.pose.orientation)
-                            new_yaw = yaw + rotation_offset
-                            q = get_quaternion_from_euler(0, 0, new_yaw)
-
-                            rotate_pose = deepcopy(current_pose)
-                            rotate_pose.pose.orientation.x = q[0]
-                            rotate_pose.pose.orientation.y = q[1]
-                            rotate_pose.pose.orientation.z = q[2]
-                            rotate_pose.pose.orientation.w = q[3]
-
-                            navigator.goToPose(rotate_pose)
-                            while not navigator.isTaskComplete():
-                                rclpy.spin_once(sensor_monitor, timeout_sec=0.1)
-
-                    print('>>> Interrupt routine complete. Resuming waypoints... <<<\n')
-
-                # Resume remaining waypoints
+                # 6. Give control back to Nav2
                 if interrupted_waypoint_idx is not None:
                     remaining = inspection_points[interrupted_waypoint_idx:]
                     if remaining:
                         navigator.followWaypoints(remaining)
-                    else:
-                        print('No remaining waypoints – navigation finished?')
 
     result = navigator.getResult()
     if result == TaskResult.SUCCEEDED:
