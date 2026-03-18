@@ -62,11 +62,11 @@ def main():
     # [ X-pos, Y-pos, Theta-yaw ]
     inspection_route = [
         #Necessary half way poses
-        [1.0, -0.1, 1.78],
-        [2.2, -0.1, 0.0],
-        [3.3, -0.5, 3.14],
-        [2.4, -0.1, 4.71],
-        [-0.5, -0.5, 0.0]]
+        [1.0, 1.25, 1.78],
+        [2.2, 1.25, 0.0],
+        [3.3, 1.25, 3.14],
+        [2.4, 1.25, 4.71],
+        [-0.5, 1.25, 0.0]]
 
     #Set our demo's initial pose
     initial_pose = PoseStamped()
