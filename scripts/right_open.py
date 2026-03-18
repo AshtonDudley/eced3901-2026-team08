@@ -63,8 +63,9 @@ def main():
     inspection_route = [
         #Necessary half way poses
         [1.0, 0.0, 1.78],
-        [3.3, -0.5, 0.0],
-        [2.8, 0.0, 0.65],
+        [2.0, 0.0, 0.0],
+        [3.3, -0.5, 3.14],
+        [2.4, 0.0, 0.65],
         [-0.5, -0.5, 0.0]]
 
     # Set our demo's initial pose
