@@ -1,3 +1,5 @@
+# Program not to be used, just for reference
+
 from copy import deepcopy
 import math
 import numpy as np
@@ -43,7 +45,9 @@ class SensorMonitor(node):
     def difference(self, threshold):
         if self.lidar_front is None or self.ultrasonic_front is None:
             return False
-        return abs(self.lidar_front - self.ultrasonic_front) > threshold
+        if self.lidar_front - self.ultrasonic_front < 0:
+            return False
+        return self.lidar_front - self.ultrasonic_front > threshold
 
 def main():
 
