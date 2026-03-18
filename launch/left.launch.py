@@ -140,7 +140,14 @@ def generate_launch_description():
     package='eced3901',
     executable='left_coast.py',
     name='wp_follower',
-    output='screen') 
+    output='screen')
+
+  start_uart_bridge = Node(
+    condition=IfCondition(use_rviz),
+    package='eced3901',
+    executable='uart_bridge.py',
+    name='uart_bridge',
+    output='screen')
   
   
   # Create the launch description and populate
@@ -164,5 +171,6 @@ def generate_launch_description():
   ld.add_action(start_rviz_cmd)
   ld.add_action(start_ros2_navigation_cmd)
   ld.add_action(start_wpfollow)
+  ld.add_action(start_uart_bridge)
   
   return ld
