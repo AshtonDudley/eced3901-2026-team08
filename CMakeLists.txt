@@ -29,8 +29,6 @@ ament_target_dependencies(dt1 rclcpp std_msgs nav_msgs geometry_msgs tf2)
 install(TARGETS
   talker
   dt1
-  dt1_final
-  ultrasonic_serial_node
   DESTINATION lib/${PROJECT_NAME})
 # uncomment the following section in order to fill in
 # further dependencies manually.
