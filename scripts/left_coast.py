@@ -118,7 +118,7 @@ def main():
     i = 0
     last_waypoint = 0
     if ser:
-        ser.write(b'0xf3')
+        ser.write(b'\xf3')
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
@@ -129,7 +129,7 @@ def main():
                 completed_waypoint = last_waypoint + 1
                 if completed_waypoint == 3 or completed_waypoint == 5:
                     if ser:
-                        ser.write(b'0xf3')
+                        ser.write(b'\xf3')
                 last_waypoint = feedback.current_waypoint 
             if i % 5 == 0: 
                 print('Executing current waypoint: ' +
