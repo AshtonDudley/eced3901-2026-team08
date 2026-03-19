@@ -117,6 +117,8 @@ def main():
     # Simply the current waypoint ID for the demonstation
     i = 0
     last_waypoint = 0
+    if ser:
+        ser.write(b'0xf3')
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
