@@ -21,6 +21,7 @@ from copy import deepcopy
 from geometry_msgs.msg import PoseStamped
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 import rclpy
+import serial
 
 """
 Basic stock inspection demo. In this demonstration, the expectation
@@ -102,12 +103,18 @@ def main():
         inspection_points.append(deepcopy(inspection_pose))
     navigator.followWaypoints(inspection_points)
 
+    # Open UART
+    try:
+        ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
+    except serial.SerialException as e:
+        ser = None
+
     # Do something during our route (e.x. AI to analyze stock information or upload to the cloud)
     # Simply the current waypoint ID for the demonstation
     i = 0
     last_waypoint = 0
     if ser:
-        ser.write(b'0xf3')
+        ser.write(b'\xf3')
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
@@ -118,11 +125,13 @@ def main():
                 completed_waypoint = last_waypoint + 1
                 if completed_waypoint == 3 or completed_waypoint == 5:
                     if ser:
-                        ser.write(b'0xf3')
+                        ser.write(b'\xf3')
                     last_waypoint = feedback.current_waypoint
             if i % 5 == 0:
                 print('Executing current waypoint: ' +
                     str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
+    if ser:
+        ser.write(b'\xf3')
 
     result = navigator.getResult()
     if result == TaskResult.SUCCEEDED:

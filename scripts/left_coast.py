@@ -134,6 +134,8 @@ def main():
             if i % 5 == 0: 
                 print('Executing current waypoint: ' +
                     str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
+    if ser:
+        ser.write(b'\xf3')
 
     result = navigator.getResult()
     if result == TaskResult.SUCCEEDED:
