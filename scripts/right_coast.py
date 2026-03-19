@@ -105,12 +105,21 @@ def main():
     # Do something during our route (e.x. AI to analyze stock information or upload to the cloud)
     # Simply the current waypoint ID for the demonstation
     i = 0
+    last_waypoint = 0
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('Executing current waypoint: ' +
-                  str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
+
+        if feedback:
+            if feedback.current_waypoint > last_waypoint:
+                completed_waypoint = last_waypoint + 1
+                if completed_waypoint == 3 or completed_waypoint == 5:
+                    if ser:
+                        ser.write(b'0xf3')
+                    last_waypoint = feedback.current_waypoint
+            if i % 5 == 0:
+                print('Executing current waypoint: ' +
+                    str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
 
     result = navigator.getResult()
     if result == TaskResult.SUCCEEDED:
