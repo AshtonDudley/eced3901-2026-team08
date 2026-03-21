@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # Copyright 2021 Samsung Research America
-# Updated March 12, 2026 - By: Megan Neville
-# Navigation 2 Waypoint Follower - Ultrasonic-Only Lifeboat Rescue
+# Updated March 21, 2026 - By: Megan Neville
+# Navigation 2 Waypoint Follower - Ultimate Lifeboat Rescue (FOV + Dynamic Sweep)
 
 from copy import deepcopy
 import math
@@ -41,13 +41,14 @@ def normalize_angle(angle):
     return angle
 
 # ==========================================
-# SENSOR MONITOR NODE (Ultrasonic Only)
+# SENSOR MONITOR NODE
 # ==========================================
 
 class SensorMonitor(Node):
     def __init__(self):
         super().__init__('sensor_monitor')
         self.ultrasonic_front = None
+        self.lidar_front = None
         self.amcl_pose = None
 
         sensor_qos = QoSProfile(
@@ -59,6 +60,7 @@ class SensorMonitor(Node):
 
         # Subscribers
         self.ultrasonic_sub = self.create_subscription(LaserScan, '/ultrasonic_scan', self.ultrasonic_callback, sensor_qos)
+        self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, sensor_qos)
         self.pose_sub = self.create_subscription(PoseWithCovarianceStamped, '/amcl_pose', self.pose_callback, 10)
 
         # Publisher for Manual Motor Override
@@ -67,11 +69,46 @@ class SensorMonitor(Node):
     def pose_callback(self, msg):
         self.amcl_pose = msg.pose.pose
 
+    def lidar_callback(self, msg):
+        if msg.angle_increment == 0:
+            return
+
+        # 30-degree FOV matching the Ultrasonic cone (+/- 15 degrees)
+        half_fov_rad = math.radians(15.0)
+
+        center_idx = int((0.0 - msg.angle_min) / msg.angle_increment)
+        idx_offset = int(half_fov_rad / msg.angle_increment)
+
+        start_idx = max(0, center_idx - idx_offset)
+        end_idx = min(len(msg.ranges), center_idx + idx_offset + 1)
+
+        fov_ranges = msg.ranges[start_idx:end_idx]
+        valid_ranges = [r for r in fov_ranges if not math.isinf(r) and not math.isnan(r) and r > 0.0]
+
+        if valid_ranges:
+            self.lidar_front = min(valid_ranges)
+        else:
+            self.lidar_front = None
+
     def ultrasonic_callback(self, msg):
         if msg.ranges:
             val = msg.ranges[0]
             if not math.isinf(val) and not math.isnan(val):
                 self.ultrasonic_front = val
+
+    def difference(self, threshold):
+        if self.lidar_front is None or self.ultrasonic_front is None:
+            return False
+            
+        if math.isinf(self.lidar_front) or math.isinf(self.ultrasonic_front):
+            return False
+            
+        diff = self.lidar_front - self.ultrasonic_front
+        if diff > threshold:
+            self.get_logger().warn(f"*** Mismatch! Lidar FOV: {self.lidar_front:.2f}m | US: {self.ultrasonic_front:.2f}m ***")
+            return True
+            
+        return False
 
 # ==========================================
 # MAIN NAVIGATION LOGIC
@@ -81,7 +118,8 @@ def main():
     rclpy.init()
 
     # Interrupt Parameters
-    DETECT_DISTANCE = 0.10  # Absolute distance trigger (< 20cm)
+    DETECT_DISTANCE = 0.08  # Absolute distance trigger (< 8cm)
+    DIFF_THRESHOLD = 0.15   # Lidar/Ultrasonic mismatch trigger (> 15cm)
     TARGET_DISTANCE = 0.05  # Stop driving when 5cm away
     MANUAL_SPEED = 0.05     # Drive at 5 cm/s
     SPIN_SPEED = 0.8        # Positive = Counter-Clockwise spin (rad/s)
@@ -167,11 +205,16 @@ def main():
         now = time.time()
         if last_interrupt_time is None or (now - last_interrupt_time) > COOLDOWN_TIME:
             
-            # PURE ULTRASONIC DISTANCE CHECK
-            if sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front < DETECT_DISTANCE:
-                # Capture the exact distance of the lifeboat to use for the sweep threshold
-                boat_distance = sensor_monitor.ultrasonic_front
-                print(f'\n>>> LIFEBOAT DETECTED at {boat_distance:.2f}m! Halting Nav2... <<<')
+            # THE HYBRID CHECK
+            is_close = (sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front < DETECT_DISTANCE)
+            is_mismatched = sensor_monitor.difference(DIFF_THRESHOLD)
+            
+            if is_close or is_mismatched:
+                
+                # Capture the exact distance for the dynamic sweep threshold
+                boat_distance = sensor_monitor.ultrasonic_front if sensor_monitor.ultrasonic_front else DETECT_DISTANCE
+                print(f'\n>>> LIFEBOAT DETECTED at ~{boat_distance:.2f}m! Halting Nav2... <<<')
+                
                 last_interrupt_time = time.time()
                 
                 # Save where we were in the list
@@ -188,7 +231,7 @@ def main():
                     rclpy.spin_once(sensor_monitor, timeout_sec=0.1)
 
                 # ---------------------------------------------------------
-                # 2. ALIGNMENT SWEEP: FIND THE CENTER OF THE LIFEBOAT
+                # 2. DYNAMIC ALIGNMENT SWEEP
                 # ---------------------------------------------------------
                 if sensor_monitor.amcl_pose:
                     print('>>> Commencing Dynamic Sweep to find Lifeboat Center... <<<')
@@ -198,8 +241,7 @@ def main():
                         rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
                         return get_yaw_from_quaternion(sensor_monitor.amcl_pose.orientation)
 
-                    # Dynamic Thresholds based on actual boat distance
-                    # Assume we hit an edge if the distance jumps by 10cm
+                    # We assume we hit the edge of the lifeboat if the distance jumps by 5cm
                     EDGE_DROP_OFF = 0.05 
                     clear_distance = boat_distance + EDGE_DROP_OFF
 
@@ -305,7 +347,6 @@ def main():
                 remaining = inspection_points[global_wp_offset:]
                 if remaining:
                     navigator.followWaypoints(remaining)
-
 
     # Final Cleanup
     if ser:
