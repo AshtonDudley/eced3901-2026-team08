@@ -81,7 +81,7 @@ def main():
     rclpy.init()
 
     # Interrupt Parameters
-    DETECT_DISTANCE = 0.20  # Absolute distance trigger (< 20cm)
+    DETECT_DISTANCE = 0.10  # Absolute distance trigger (< 20cm)
     TARGET_DISTANCE = 0.05  # Stop driving when 5cm away
     MANUAL_SPEED = 0.05     # Drive at 5 cm/s
     SPIN_SPEED = 0.8        # Positive = Counter-Clockwise spin (rad/s)
@@ -200,7 +200,7 @@ def main():
 
                     # Dynamic Thresholds based on actual boat distance
                     # Assume we hit an edge if the distance jumps by 10cm
-                    EDGE_DROP_OFF = 0.10 
+                    EDGE_DROP_OFF = 0.05 
                     clear_distance = boat_distance + EDGE_DROP_OFF
 
                     # --- Phase A: Rotate Right until we "fall off" the right edge ---
