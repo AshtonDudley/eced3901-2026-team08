@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # Copyright 2021 Samsung Research America
 # Updated March 12, 2026 - By: Megan Neville
-# Navigation 2 Waypoint Follower with Hybrid Interrupt, Alignment Sweep & UART
+# Navigation 2 Waypoint Follower - Ultrasonic-Only Lifeboat Rescue
 
 from copy import deepcopy
 import math
@@ -41,15 +41,13 @@ def normalize_angle(angle):
     return angle
 
 # ==========================================
-# SENSOR MONITOR NODE
+# SENSOR MONITOR NODE (Ultrasonic Only)
 # ==========================================
 
 class SensorMonitor(Node):
     def __init__(self):
         super().__init__('sensor_monitor')
         self.ultrasonic_front = None
-        self.lidar_front = None
-        self.lidar_angle_idx = None
         self.amcl_pose = None
 
         sensor_qos = QoSProfile(
@@ -61,7 +59,6 @@ class SensorMonitor(Node):
 
         # Subscribers
         self.ultrasonic_sub = self.create_subscription(LaserScan, '/ultrasonic_scan', self.ultrasonic_callback, sensor_qos)
-        self.lidar_sub = self.create_subscription(LaserScan, '/scan', self.lidar_callback, sensor_qos)
         self.pose_sub = self.create_subscription(PoseWithCovarianceStamped, '/amcl_pose', self.pose_callback, 10)
 
         # Publisher for Manual Motor Override
@@ -70,36 +67,11 @@ class SensorMonitor(Node):
     def pose_callback(self, msg):
         self.amcl_pose = msg.pose.pose
 
-    def lidar_callback(self, msg):
-        if self.lidar_angle_idx is None:
-            if msg.angle_increment == 0:
-                return
-            idx = int((0.0 - msg.angle_min) / msg.angle_increment)
-            if 0 <= idx < len(msg.ranges):
-                self.lidar_angle_idx = idx
-                
-        if self.lidar_angle_idx is not None and self.lidar_angle_idx < len(msg.ranges):
-            self.lidar_front = msg.ranges[self.lidar_angle_idx]
-
     def ultrasonic_callback(self, msg):
         if msg.ranges:
             val = msg.ranges[0]
             if not math.isinf(val) and not math.isnan(val):
                 self.ultrasonic_front = val
-
-    def difference(self, threshold):
-        if self.lidar_front is None or self.ultrasonic_front is None:
-            return False
-            
-        if math.isinf(self.lidar_front) or math.isinf(self.ultrasonic_front):
-            return False
-            
-        diff = self.lidar_front - self.ultrasonic_front
-        if diff > threshold:
-            self.get_logger().warn(f"*** Mismatch Detected! Diff: {diff:.2f}m ***")
-            return True
-            
-        return False
 
 # ==========================================
 # MAIN NAVIGATION LOGIC
@@ -110,7 +82,6 @@ def main():
 
     # Interrupt Parameters
     DETECT_DISTANCE = 0.20  # Absolute distance trigger (< 20cm)
-    DIFF_THRESHOLD = 0.15   # Lidar/Ultrasonic mismatch trigger (> 15cm)
     TARGET_DISTANCE = 0.05  # Stop driving when 5cm away
     MANUAL_SPEED = 0.05     # Drive at 5 cm/s
     SPIN_SPEED = 0.8        # Positive = Counter-Clockwise spin (rad/s)
@@ -196,12 +167,11 @@ def main():
         now = time.time()
         if last_interrupt_time is None or (now - last_interrupt_time) > COOLDOWN_TIME:
             
-            # THE HYBRID CHECK
-            is_close = (sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front < DETECT_DISTANCE)
-            is_mismatched = sensor_monitor.difference(DIFF_THRESHOLD)
-            
-            if is_close or is_mismatched:
-                print(f'\n>>> CARGO DETECTED! Halting Nav2... <<<')
+            # PURE ULTRASONIC DISTANCE CHECK
+            if sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front < DETECT_DISTANCE:
+                # Capture the exact distance of the lifeboat to use for the sweep threshold
+                boat_distance = sensor_monitor.ultrasonic_front
+                print(f'\n>>> LIFEBOAT DETECTED at {boat_distance:.2f}m! Halting Nav2... <<<')
                 last_interrupt_time = time.time()
                 
                 # Save where we were in the list
@@ -218,21 +188,26 @@ def main():
                     rclpy.spin_once(sensor_monitor, timeout_sec=0.1)
 
                 # ---------------------------------------------------------
-                # 2. ALIGNMENT SWEEP: FIND THE CENTER OF THE CARGO
+                # 2. ALIGNMENT SWEEP: FIND THE CENTER OF THE LIFEBOAT
                 # ---------------------------------------------------------
                 if sensor_monitor.amcl_pose:
-                    print('>>> Commencing Sweep to find Cargo Center... <<<')
+                    print('>>> Commencing Dynamic Sweep to find Lifeboat Center... <<<')
                     twist_msg = Twist()
                     
                     def get_current_yaw():
                         rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
                         return get_yaw_from_quaternion(sensor_monitor.amcl_pose.orientation)
 
-                    # --- Phase A: Rotate Right until clear ---
+                    # Dynamic Thresholds based on actual boat distance
+                    # Assume we hit an edge if the distance jumps by 10cm
+                    EDGE_DROP_OFF = 0.10 
+                    clear_distance = boat_distance + EDGE_DROP_OFF
+
+                    # --- Phase A: Rotate Right until we "fall off" the right edge ---
                     twist_msg.angular.z = -0.3 
                     sweep_start = time.time()
                     while (sensor_monitor.ultrasonic_front is not None and 
-                           sensor_monitor.ultrasonic_front < 0.50 and 
+                           sensor_monitor.ultrasonic_front < clear_distance and 
                            (time.time() - sweep_start) < 5.0):
                         sensor_monitor.cmd_vel_pub.publish(twist_msg)
                         rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
@@ -243,18 +218,19 @@ def main():
                     time.sleep(0.5) 
                     yaw_right = get_current_yaw()
 
-                    # --- Phase B: Rotate Left until clear on the other side ---
+                    # --- Phase B: Rotate Left until we "fall off" the left edge ---
                     twist_msg.angular.z = 0.3 
                     sweep_start = time.time()
-                    # Wait until we see the box again or timeout
+                    
+                    # Wait until we see the lifeboat again (distance drops back down)
                     while (sensor_monitor.ultrasonic_front is None or 
-                           sensor_monitor.ultrasonic_front > 0.45) and (time.time() - sweep_start) < 3.0:
+                           sensor_monitor.ultrasonic_front > (boat_distance + 0.05)) and (time.time() - sweep_start) < 3.0:
                         sensor_monitor.cmd_vel_pub.publish(twist_msg)
                         rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
                         
-                    # Keep spinning left until we lose the box again
+                    # Now keep spinning left until we lose it again on the other side
                     while (sensor_monitor.ultrasonic_front is not None and 
-                           sensor_monitor.ultrasonic_front < 0.50 and 
+                           sensor_monitor.ultrasonic_front < clear_distance and 
                            (time.time() - sweep_start) < 8.0):
                         sensor_monitor.cmd_vel_pub.publish(twist_msg)
                         rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
@@ -305,7 +281,7 @@ def main():
                 # ---------------------------------------------------------
                 # 4. OVERRIDE: COUNTER-CLOCKWISE SPIN
                 # ---------------------------------------------------------
-                print('>>> Commencing CCW Pickup Spin... <<<')
+                print('>>> Commencing CCW Rescue Spin... <<<')
                 twist_msg.angular.z = SPIN_SPEED 
                 
                 start_rotate = time.time()
@@ -318,7 +294,7 @@ def main():
                 twist_msg.angular.z = 0.0
                 sensor_monitor.cmd_vel_pub.publish(twist_msg)
 
-                print('>>> Pickup Complete. Resuming Nav2 Route... <<<\n')
+                print('>>> Rescue Complete. Resuming Nav2 Route... <<<\n')
 
                 # ---------------------------------------------------------
                 # 5. RESUME: HAND CONTROL BACK TO NAV2
