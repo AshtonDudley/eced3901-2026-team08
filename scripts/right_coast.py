@@ -66,10 +66,14 @@ def main():
         [2.0, -0.6, 0.0],
         [2.6, 0.1, 0.0],
         #Drop off cargo
-        [3.35, -0.6,-1.57],
+        [3.35, -0.6,-2.57],
+        #Reset
         [3.0, -0.45,1.57],
+        #Pick up cargo
         [3.30, 0.0, 3.14],
+        #Necessary half way pose
         [2.2, -0.65, 3.14],
+        #Head back to origin
         [-0.5, 0.0, 0.0]]
 
     # Set our demo's initial pose
