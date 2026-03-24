@@ -154,10 +154,20 @@ def main():
     else:
         print(f'Phase 1 ended with result: {result}')
 
-    # ---- DEAD RECKONING: rotate left then right for 5 seconds ----
+    # ---- DEAD RECKONING: back up 5 cm then rotate left/right ----
     twist = Twist()
 
+    # Back up 5 cm (0.05 m at 0.1 m/s = 0.5 seconds)
+    twist.linear.x = -0.1
+    print('Backing up 5 cm...')
+    start_time = time.time()
+    while time.time() - start_time < 0.5: #makes it back up 5cm 
+        cmd_vel_pub.publish(twist)
+        time.sleep(0.05)
+    cmd_vel_pub.publish(Twist())  # Stop before rotating
+
     # Rotate left for 2.5 seconds
+    twist = Twist()
     twist.angular.z = 0.5  # rad/s counterclockwise
     print('Rotating left...')
     start_time = time.time()
