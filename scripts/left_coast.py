@@ -70,7 +70,7 @@ def main():
         #Reset
         [2.8, 0.3, 3.14],
         #Pick up cargo
-        [3.45, -0.2, 3.20],
+        [3.45, -0.2, 3.55],
         #Necessary half way pose
         [1.8, 0.6, 3.14],
         #Head back to origin
@@ -118,7 +118,7 @@ def main():
     i = 0
     last_waypoint = 0
     if ser:
-        ser.write(b'\xf3')
+        ser.write(b'\xf1')  # Magnet ON at start
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
@@ -126,16 +126,20 @@ def main():
         # Feedback loop for dropping cargo
         if feedback:
             if feedback.current_waypoint > last_waypoint:
-                completed_waypoint = last_waypoint + 1
-                if completed_waypoint == 3 or completed_waypoint == 5:
+                # Waypoints are 0-indexed in feedback; +1 for 1-indexed
+                reached_waypoint = feedback.current_waypoint + 1
+                if reached_waypoint == 3:
                     if ser:
-                        ser.write(b'\xf3')
+                        ser.write(b'\xf2')  # Magnet OFF at waypoint 3
+                elif reached_waypoint == 5:
+                    if ser:
+                        ser.write(b'\xf1')  # Magnet ON at waypoint 5
                 last_waypoint = feedback.current_waypoint 
             if i % 5 == 0: 
                 print('Executing current waypoint: ' +
                     str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
     if ser:
-        ser.write(b'\xf3')
+        ser.write(b'\xf2')  # Magnet OFF at end
 
     result = navigator.getResult()
     if result == TaskResult.SUCCEEDED:
