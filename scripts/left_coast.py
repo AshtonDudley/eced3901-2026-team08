@@ -135,11 +135,11 @@ def main():
         if feedback:
             if feedback.current_waypoint > last_waypoint:
                 reached_waypoint = feedback.current_waypoint + 1
-                if reached_waypoint == 3:
+                if reached_waypoint == 4:
                     if ser:
                         ser.write(b'\xf2')  # Magnet OFF at drop off
                         print('Magnet OFF (drop off)')
-                elif reached_waypoint == 5:
+                elif reached_waypoint == 6:
                     if ser:
                         ser.write(b'\xf1')  # Magnet ON at pick up
                         print('Magnet ON (pick up)')
