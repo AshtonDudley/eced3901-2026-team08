@@ -131,7 +131,7 @@ def main():
                 if reached_waypoint == 4:
                     if ser:
                         ser.write(b'\xf2')  # Magnet OFF at waypoint 3
-                elif reached_waypoint == 6:
+                elif reached_waypoint == 5:
                     if ser:
                         ser.write(b'\xf1')  # Magnet ON at waypoint 5
                 last_waypoint = feedback.current_waypoint 
