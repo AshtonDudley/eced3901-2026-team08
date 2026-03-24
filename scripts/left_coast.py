@@ -128,10 +128,10 @@ def main():
             if feedback.current_waypoint > last_waypoint:
                 # Waypoints are 0-indexed in feedback; +1 for 1-indexed
                 reached_waypoint = feedback.current_waypoint + 1
-                if reached_waypoint == 3:
+                if reached_waypoint == 4:
                     if ser:
                         ser.write(b'\xf2')  # Magnet OFF at waypoint 3
-                elif reached_waypoint == 5:
+                elif reached_waypoint == 6:
                     if ser:
                         ser.write(b'\xf1')  # Magnet ON at waypoint 5
                 last_waypoint = feedback.current_waypoint 
