@@ -66,11 +66,11 @@ def main():
         [1.8, 0.6, 0.78],
         [2.6, 0.1, 0.0],
         #Drop off cargo
-        [3.85, 0.6, 1.9],
+        [3.85, 0.6, 2.0],
         #Reset
         [2.8, 0.3, 3.14],
         #Pick up cargo
-        [3.55, -0.2, 2.90],
+        [3.65, -0.2, 2.90],
         #Necessary half way pose
         [1.8, 0.6, 3.14],
         #Head back to origin
