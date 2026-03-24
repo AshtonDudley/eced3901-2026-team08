@@ -127,7 +127,7 @@ def main():
         if feedback:
             if feedback.current_waypoint > last_waypoint:
                 completed_waypoint = last_waypoint + 1
-                if completed_waypoint == 2 or completed_waypoint == 4:
+                if completed_waypoint == 3 or completed_waypoint == 5:
                     if ser:
                         ser.write(b'\xf3')
                     last_waypoint = feedback.current_waypoint
