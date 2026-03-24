@@ -18,10 +18,11 @@
 
 from copy import deepcopy
 
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 import rclpy
 import serial
+import time
 
 """
 Basic stock inspection demo. In this demonstration, the expectation
@@ -58,10 +59,9 @@ def main():
 
     navigator = BasicNavigator()
 
-    # Inspection route, probably read in from a file for a real application
-    # from either a map or drive and repeat.
+    # Phase 1: Navigate to pick up cargo
     # [ X-pos, Y-pos, Theta-yaw ]
-    inspection_route = [
+    phase1_route = [
         #Necessary half way poses
         [1.8, 0.6, 0.78],
         [2.6, 0.1, 0.0],
@@ -70,7 +70,10 @@ def main():
         #Reset
         [2.8, 0.3, 3.14],
         #Pick up cargo
-        [3.65, -0.2, 2.90],
+        [3.65, -0.2, 2.90]]
+
+    # Phase 2: Return home after dead reckoning
+    phase2_route = [
         #Necessary half way pose
         [1.8, 0.6, 3.14],
         #Head back to origin
@@ -89,65 +92,114 @@ def main():
     # Wait for navigation to fully activate
     navigator.waitUntilNav2Active()
 
-    # Send our route
-    inspection_points = []
-    inspection_pose = PoseStamped()
-    inspection_pose.header.frame_id = 'map'
-    inspection_pose.header.stamp = navigator.get_clock().now().to_msg()
-    #inspection_pose.pose.orientation.z = 0.0
-    #inspection_pose.pose.orientation.w = 1.0
-    for pt in inspection_route:    
-        inspection_pose.pose.position.x = pt[0]
-        inspection_pose.pose.position.y = pt[1]
-        q = get_quaternion_from_euler(0,0,pt[2])
-        inspection_pose.pose.orientation.x = q[0]
-        inspection_pose.pose.orientation.y = q[1]      
-        inspection_pose.pose.orientation.z = q[2]
-        inspection_pose.pose.orientation.w = q[3]  
-        inspection_points.append(deepcopy(inspection_pose))
-    navigator.followWaypoints(inspection_points)
+    # Create cmd_vel publisher for dead reckoning
+    cmd_vel_pub = navigator.create_publisher(Twist, 'cmd_vel', 10)
+
+    # Helper to build waypoint list from a route
+    def build_waypoints(route):
+        points = []
+        pose = PoseStamped()
+        pose.header.frame_id = 'map'
+        pose.header.stamp = navigator.get_clock().now().to_msg()
+        for pt in route:
+            pose.pose.position.x = pt[0]
+            pose.pose.position.y = pt[1]
+            q = get_quaternion_from_euler(0, 0, pt[2])
+            pose.pose.orientation.x = q[0]
+            pose.pose.orientation.y = q[1]
+            pose.pose.orientation.z = q[2]
+            pose.pose.orientation.w = q[3]
+            points.append(deepcopy(pose))
+        return points
 
     # Open UART
     try:
         ser = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
     except serial.SerialException as e:
+        print(f'Serial open failed: {e}')
         ser = None
 
-    # Do something during our route (e.x. AI to analyze stock information or upload to the cloud)
-    # Simply the current waypoint ID for the demonstation
-    i = 0
-    last_waypoint = 0
+    # ---- PHASE 1: Navigate to pick up cargo ----
+    phase1_points = build_waypoints(phase1_route)
+    navigator.followWaypoints(phase1_points)
+
     if ser:
         ser.write(b'\xf1')  # Magnet ON at start
+        print('Magnet ON')
+
+    i = 0
+    last_waypoint = 0
     while not navigator.isTaskComplete():
         i += 1
         feedback = navigator.getFeedback()
-
-        # Feedback loop for dropping cargo
         if feedback:
             if feedback.current_waypoint > last_waypoint:
-                # Waypoints are 0-indexed in feedback; +1 for 1-indexed
                 reached_waypoint = feedback.current_waypoint + 1
-                if reached_waypoint == 4:
+                if reached_waypoint == 3:
                     if ser:
-                        ser.write(b'\xf2')  # Magnet OFF at waypoint 3
+                        ser.write(b'\xf2')  # Magnet OFF at drop off
+                        print('Magnet OFF (drop off)')
                 elif reached_waypoint == 5:
                     if ser:
-                        ser.write(b'\xf1')  # Magnet ON at waypoint 5
-                last_waypoint = feedback.current_waypoint 
-            if i % 5 == 0: 
-                print('Executing current waypoint: ' +
-                    str(feedback.current_waypoint + 1) + '/' + str(len(inspection_points)))
-    if ser:
-        ser.write(b'\xf2')  # Magnet OFF at end
+                        ser.write(b'\xf1')  # Magnet ON at pick up
+                        print('Magnet ON (pick up)')
+                last_waypoint = feedback.current_waypoint
+            if i % 5 == 0:
+                print('Phase 1 waypoint: ' +
+                    str(feedback.current_waypoint + 1) + '/' + str(len(phase1_points)))
 
     result = navigator.getResult()
     if result == TaskResult.SUCCEEDED:
-        print('Inspection complete! Returning to start...')
+        print('Phase 1 complete. Starting dead reckoning...')
+    else:
+        print(f'Phase 1 ended with result: {result}')
+
+    # ---- DEAD RECKONING: rotate left then right for 5 seconds ----
+    twist = Twist()
+
+    # Rotate left for 2.5 seconds
+    twist.angular.z = 0.5  # rad/s counterclockwise
+    print('Rotating left...')
+    start_time = time.time()
+    while time.time() - start_time < 2.5:
+        cmd_vel_pub.publish(twist)
+        time.sleep(0.05)
+
+    # Rotate right for 2.5 seconds
+    twist.angular.z = -0.5  # rad/s clockwise
+    print('Rotating right...')
+    start_time = time.time()
+    while time.time() - start_time < 2.5:
+        cmd_vel_pub.publish(twist)
+        time.sleep(0.05)
+
+    # Stop the robot
+    cmd_vel_pub.publish(Twist())
+    print('Dead reckoning complete.')
+
+    # ---- PHASE 2: Resume nav stack to return home ----
+    phase2_points = build_waypoints(phase2_route)
+    navigator.followWaypoints(phase2_points)
+
+    i = 0
+    while not navigator.isTaskComplete():
+        i += 1
+        feedback = navigator.getFeedback()
+        if feedback and i % 5 == 0:
+            print('Phase 2 waypoint: ' +
+                str(feedback.current_waypoint + 1) + '/' + str(len(phase2_points)))
+
+    if ser:
+        ser.write(b'\xf2')  # Magnet OFF at end
+        print('Magnet OFF (end)')
+
+    result = navigator.getResult()
+    if result == TaskResult.SUCCEEDED:
+        print('Mission complete!')
     elif result == TaskResult.CANCELED:
-        print('Inspection was canceled. Returning to start...')
+        print('Phase 2 was canceled.')
     elif result == TaskResult.FAILED:
-        print('Inspection failed! Returning to start...')
+        print('Phase 2 failed!')
 
     # go back to start
     # initial_pose.header.stamp = navigator.get_clock().now().to_msg()
