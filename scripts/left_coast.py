@@ -70,7 +70,7 @@ def main():
         #Reset
         [2.8, 0.3, 3.14],
         #Pick up cargo
-        [3.45, -0.2, 2.90],
+        [3.55, -0.2, 2.90],
         #Necessary half way pose
         [1.8, 0.6, 3.14],
         #Head back to origin
