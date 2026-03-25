@@ -179,7 +179,7 @@ def main():
     twist.angular.z = -0.5  # rad/s clockwise
     print('Rotating right...')
     start_time = time.time()
-    while time.time() - start_time < 3.0:
+    while time.time() - start_time < 5.0:
         cmd_vel_pub.publish(twist)
         time.sleep(0.05)
 
