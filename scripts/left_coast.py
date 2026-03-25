@@ -70,7 +70,7 @@ def main():
         #Reset
         [2.8, 0.3, 3.14],
         #Pick up cargo
-        [3.45, -0.2, 3.14]]
+        [3.45, -0.2, 3.3]]
 
     # Phase 2: Return home after dead reckoning
     phase2_route = [
