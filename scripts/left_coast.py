@@ -70,7 +70,7 @@ def main():
         #Reset
         [2.8, 0.3, 3.14],
         #Pick up cargo
-        [3.65, -0.2, 2.90]]
+        [3.45, -0.2, 3.14]]
 
     # Phase 2: Return home after dead reckoning
     phase2_route = [
@@ -179,7 +179,7 @@ def main():
     twist.angular.z = -0.5  # rad/s clockwise
     print('Rotating right...')
     start_time = time.time()
-    while time.time() - start_time < 2.5:
+    while time.time() - start_time < 2.8:
         cmd_vel_pub.publish(twist)
         time.sleep(0.05)
 
