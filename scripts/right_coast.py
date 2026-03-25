@@ -69,9 +69,9 @@ def main():
         #Drop off cargo
         [3.75, -0.6,3.14],
         #Reset
-        [2.8, 0.0, 3.14],
+        [2.8, 0.0, 0.0],
         #Pick up cargo
-        [3.25, -0.1, 3.3]]
+        [3.25, -0.2, 3.3]]
     
     phase2_route = [
         #Necessary half way pose
@@ -159,9 +159,9 @@ def main():
 
     # Back up 5 cm (0.05 m at 0.1 m/s = 0.5 seconds)
     twist.linear.x = -0.1
-    print('Backing up 5 cm...')
+    print('Backing up 15 cm...')
     start_time = time.time()
-    while time.time() - start_time < 1.2: #makes it back up 5cm 
+    while time.time() - start_time < 2.0: #makes it back up 5cm 
         cmd_vel_pub.publish(twist)
         time.sleep(0.05)
     cmd_vel_pub.publish(Twist())  # Stop before rotating
