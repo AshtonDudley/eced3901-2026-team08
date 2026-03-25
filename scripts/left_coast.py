@@ -13,20 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Updated March 24, 2026
+# Updated March 12, 2026
 # By: Megan Neville
 
 from copy import deepcopy
-import math
-import time
 
 from geometry_msgs.msg import PoseStamped, Twist
 from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy
-from sensor_msgs.msg import LaserScan
 import serial
+import time
 
 """
 Basic stock inspection demo. In this demonstration, the expectation
@@ -56,38 +52,10 @@ def get_quaternion_from_euler(roll, pitch, yaw):
   qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
  
   return [qx, qy, qz, qw]
-
-# ==========================================
-# SENSOR MONITOR NODE (Added for Interrupt)
-# ==========================================
-class SensorMonitor(Node):
-    def __init__(self):
-        super().__init__('sensor_monitor')
-        self.ultrasonic_front = None
-        
-        sensor_qos = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
-            durability=DurabilityPolicy.VOLATILE,
-            history=HistoryPolicy.KEEP_LAST,
-            depth=1
-        )
-
-        self.ultrasonic_sub = self.create_subscription(LaserScan, '/ultrasonic_scan', self.ultrasonic_callback, sensor_qos)
-        self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-
-    def ultrasonic_callback(self, msg):
-        if msg.ranges:
-            val = msg.ranges[0]
-            if not math.isinf(val) and not math.isnan(val):
-                self.ultrasonic_front = val
-
+  
 
 def main():
     rclpy.init()
-
-    sensor_monitor = SensorMonitor()
-    last_interrupt_time = None
-    DETECT_DISTANCE = 0.10 # 10cm trigger
 
     navigator = BasicNavigator()
 
@@ -110,6 +78,16 @@ def main():
         [1.8, 0.6, 3.14],
         #Head back to origin
         [-0.5, -0.5, 0.0]]
+
+    # Set our demo's initial pose
+    # initial_pose = PoseStamped()
+    # initial_pose.header.frame_id = 'map'
+    # initial_pose.header.stamp = navigator.get_clock().now().to_msg()
+    # initial_pose.pose.position.x = 0.0
+    # initial_pose.pose.position.y = 0.0
+    # initial_pose.pose.orientation.z = 0.0
+    # initial_pose.pose.orientation.w = 0.0
+    # navigator.setInitialPose(initial_pose)
 
     # Wait for navigation to fully activate
     navigator.waitUntilNav2Active()
@@ -150,18 +128,13 @@ def main():
         print('Magnet ON')
 
     i = 0
-    phase1_offset = 0
     last_waypoint = 0
     while not navigator.isTaskComplete():
         i += 1
-        rclpy.spin_once(sensor_monitor, timeout_sec=0.01) # Allow sensor updates
         feedback = navigator.getFeedback()
-        
         if feedback:
-            # Track global position so UART commands survive route slicing
-            current_global_wp = phase1_offset + feedback.current_waypoint
-            if current_global_wp > last_waypoint:
-                reached_waypoint = current_global_wp + 1
+            if feedback.current_waypoint > last_waypoint:
+                reached_waypoint = feedback.current_waypoint + 1
                 if reached_waypoint == 4:
                     if ser:
                         ser.write(b'\xf2')  # Magnet OFF at drop off
@@ -170,45 +143,10 @@ def main():
                     if ser:
                         ser.write(b'\xf1')  # Magnet ON at pick up
                         print('Magnet ON (pick up)')
-                last_waypoint = current_global_wp
+                last_waypoint = feedback.current_waypoint
             if i % 5 == 0:
                 print('Phase 1 waypoint: ' +
-                    str(current_global_wp + 1) + '/' + str(len(phase1_points)))
-
-        # --- PHASE 1 INTERRUPT LOGIC ---
-        if sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front < DETECT_DISTANCE:
-            if last_interrupt_time is None or (time.time() - last_interrupt_time) > 15.0:
-                print(f'\n>>> ULTRASONIC TRIGGER: Object at {sensor_monitor.ultrasonic_front:.2f}m. Halting Nav2... <<<')
-                
-                current_local_wp = feedback.current_waypoint if feedback else 0
-                
-                # 1. Cancel Nav2
-                navigator.cancelTask()
-                while not navigator.isTaskComplete():
-                    rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
-                
-                # 2. Spin 360
-                print('>>> Commencing 360 Spin... <<<')
-                twist_msg = Twist()
-                twist_msg.angular.z = 0.8
-                spin_start = time.time()
-                while (time.time() - spin_start) < ((2.0 * math.pi) / 0.8):
-                    sensor_monitor.cmd_vel_pub.publish(twist_msg)
-                    rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
-                
-                twist_msg.angular.z = 0.0
-                sensor_monitor.cmd_vel_pub.publish(twist_msg)
-                print('>>> Spin Complete. Resuming Phase 1 Route... <<<\n')
-
-                # 3. Resume
-                last_interrupt_time = time.time()
-                phase1_offset += current_local_wp
-                last_waypoint = phase1_offset 
-                
-                remaining = phase1_points[phase1_offset:]
-                if remaining:
-                    navigator.followWaypoints(remaining)
-
+                    str(feedback.current_waypoint + 1) + '/' + str(len(phase1_points)))
 
     result = navigator.getResult()
     if result == TaskResult.SUCCEEDED:
@@ -261,50 +199,12 @@ def main():
     navigator.followWaypoints(phase2_points)
 
     i = 0
-    phase2_offset = 0
     while not navigator.isTaskComplete():
         i += 1
-        rclpy.spin_once(sensor_monitor, timeout_sec=0.01)
         feedback = navigator.getFeedback()
-        
-        if feedback:
-            current_global_wp = phase2_offset + feedback.current_waypoint
-            if i % 5 == 0:
-                print('Phase 2 waypoint: ' +
-                    str(current_global_wp + 1) + '/' + str(len(phase2_points)))
-
-        # --- PHASE 2 INTERRUPT LOGIC ---
-        if sensor_monitor.ultrasonic_front is not None and sensor_monitor.ultrasonic_front < DETECT_DISTANCE:
-            if last_interrupt_time is None or (time.time() - last_interrupt_time) > 15.0:
-                print(f'\n>>> ULTRASONIC TRIGGER: Object at {sensor_monitor.ultrasonic_front:.2f}m. Halting Nav2... <<<')
-                
-                current_local_wp = feedback.current_waypoint if feedback else 0
-                
-                # 1. Cancel Nav2
-                navigator.cancelTask()
-                while not navigator.isTaskComplete():
-                    rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
-                
-                # 2. Spin 360
-                print('>>> Commencing 360 Spin... <<<')
-                twist_msg = Twist()
-                twist_msg.angular.z = 0.8
-                spin_start = time.time()
-                while (time.time() - spin_start) < ((2.0 * math.pi) / 0.8):
-                    sensor_monitor.cmd_vel_pub.publish(twist_msg)
-                    rclpy.spin_once(sensor_monitor, timeout_sec=0.05)
-                
-                twist_msg.angular.z = 0.0
-                sensor_monitor.cmd_vel_pub.publish(twist_msg)
-                print('>>> Spin Complete. Resuming Phase 2 Route... <<<\n')
-
-                # 3. Resume
-                last_interrupt_time = time.time()
-                phase2_offset += current_local_wp
-                
-                remaining = phase2_points[phase2_offset:]
-                if remaining:
-                    navigator.followWaypoints(remaining)
+        if feedback and i % 5 == 0:
+            print('Phase 2 waypoint: ' +
+                str(feedback.current_waypoint + 1) + '/' + str(len(phase2_points)))
 
     if ser:
         ser.write(b'\xf2')  # Magnet OFF at end
@@ -318,8 +218,12 @@ def main():
     elif result == TaskResult.FAILED:
         print('Phase 2 failed!')
 
-    sensor_monitor.destroy_node()
-    rclpy.shutdown()
+    # go back to start
+    # initial_pose.header.stamp = navigator.get_clock().now().to_msg()
+    # navigator.goToPose(initial_pose)
+    # while not navigator.isTaskComplete():
+    #     pass
+
     exit(0)
 
 
