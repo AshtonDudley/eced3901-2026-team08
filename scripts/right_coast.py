@@ -71,7 +71,7 @@ def main():
         #Reset
         [2.8, 0.0, 3.14],
         #Pick up cargo
-        [3.25, -0.1, 3.14]]
+        [3.25, -0.1, 3.3]]
     
     phase2_route = [
         #Necessary half way pose
