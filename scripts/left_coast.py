@@ -139,7 +139,7 @@ def main():
                     if ser:
                         ser.write(b'\xf2')  # Magnet OFF at drop off
                         print('Magnet OFF (drop off)')
-                elif reached_waypoint == 6:
+                elif reached_waypoint == 5:
                     if ser:
                         ser.write(b'\xf1')  # Magnet ON at pick up
                         print('Magnet ON (pick up)')
