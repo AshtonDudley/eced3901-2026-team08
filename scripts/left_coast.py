@@ -171,7 +171,7 @@ def main():
     twist.angular.z = 0.5  # rad/s counterclockwise
     print('Rotating left...')
     start_time = time.time()
-    while time.time() - start_time < 1.0:
+    while time.time() - start_time < 2.5:
         cmd_vel_pub.publish(twist)
         time.sleep(0.05)
 
@@ -179,14 +179,14 @@ def main():
     twist.angular.z = -0.5  # rad/s clockwise
     print('Rotating right...')
     start_time = time.time()
-    while time.time() - start_time < 1.5:
+    while time.time() - start_time < 3.0:
         cmd_vel_pub.publish(twist)
         time.sleep(0.05)
 
     twist.angular.z = 0.5  # rad/s counterclockwise
     print('Rotating left...')
     start_time = time.time()
-    while time.time() - start_time < 0.6:
+    while time.time() - start_time < 3.5:
         cmd_vel_pub.publish(twist)
         time.sleep(0.05)
 
