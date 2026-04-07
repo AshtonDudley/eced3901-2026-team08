@@ -1,9 +1,8 @@
 /*
-Code for DT1
-V. Sieben
+Code for Navigation Testing
+M. Neville 
 Version 1.0
-Date: Feb 4, 2023
-License: GNU GPLv3
+Date: Jan 21, 2025
 */
 
 // Include important C++ header files that provide class
@@ -30,24 +29,24 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 
-// Create the node class named SquareRoutine
+// Create the node class named TestRoutine
 // It inherits rclcpp::Node class attributes and functions
-class SquareRoutine : public rclcpp::Node
+class TestRoutine : public rclcpp::Node
 {
   public:
 	// Constructor creates a node named Square_Routine. 
-	SquareRoutine() : Node("Square_Routine")
+	TestRoutine() : Node("Square_Routine")
 	{
 		// Create the subscription
 		// The callback function executes whenever data is published to the 'topic' topic.
-		subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", 10, std::bind(&SquareRoutine::topic_callback, this, _1));
+		subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("odom", 10, std::bind(&TestRoutine::topic_callback, this, _1));
           
 		// Create the publisher
 		// Publisher to a topic named "topic". The size of the queue is 10 messages.
 		publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel",10);
       
 	  	// Create the timer
-	  	timer_ = this->create_wall_timer(100ms, std::bind(&SquareRoutine::timer_callback, this)); 	  
+	  	timer_ = this->create_wall_timer(100ms, std::bind(&TestRoutine::timer_callback, this)); 	  
 	}
 
   private:
@@ -116,16 +115,31 @@ class SquareRoutine : public rclcpp::Node
 			switch(count_) 
 			{
 			  case 0:
-			    move_distance(3); //move the robot forwards
+			    move_distance(0.61);
 			    break;
 			  case 1:
-			    turn_angle(M_PI);  //turn the robot
+			    turn_angle(M_PI/2);		    
 			    break;
 			  case 2:
-			    move_distance(3);  //second movement for the robot
+			    move_distance(0.305);
 			    break;
 			  case 3:
-			    turn_angle(M_PI); //turn the robot again  
+			    turn_angle(3*M_PI/2);		    
+			    break;
+			  case 4:
+			    move_distance(0.381);
+			    break;			    
+			  case 5:
+			    turn_angle(3*M_PI/2);		    
+			    break;
+			  case 6:
+			    move_distance(0.305);
+			    break;			    
+			  case 7:
+			    turn_angle(M_PI/2);		    
+			    break;
+              case 8:
+                move_distance(0.381)
 			  default:
 			    break;
 			}
@@ -173,7 +187,7 @@ class SquareRoutine : public rclcpp::Node
 	rclcpp::TimerBase::SharedPtr timer_;
 	
 	// Declaration of Class Variables
-	double x_vel = 0.1, th_vel = 0.2;
+	double x_vel = 0.1, th_vel = 0.1;
 	double x_now = 0, x_init = 0, y_now = 0, y_init = 0, th_now = 0, th_init = 0;
 	double d_now = 0, d_aim = 0, th_aim = 0;
 	double q_x = 0, q_y = 0, q_z = 0, q_w = 0; 
@@ -191,7 +205,7 @@ int main(int argc, char * argv[])
 	rclcpp::init(argc, argv);
   
 	// Start node and callbacks
-	rclcpp::spin(std::make_shared<SquareRoutine>());
+	rclcpp::spin(std::make_shared<TestRoutine>());
  
 	// Stop node 
 	rclcpp::shutdown();

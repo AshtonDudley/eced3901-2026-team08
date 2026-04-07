@@ -2,7 +2,8 @@
 # Date: August 30, 2021
 # Description: Launch a basic mobile robot
 # https://automaticaddison.com
-# Modified: Liam Legge: 2026.
+# Modified: V. Sieben, Feb. 2023.
+# Modified: M. Neville, March. 2026.
 
 import os
 from launch import LaunchDescription
@@ -12,7 +13,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch.actions import TimerAction
 
 def generate_launch_description():
 
@@ -21,12 +21,14 @@ def generate_launch_description():
   default_launch_dir = os.path.join(pkg_share, 'launch')
   default_model_path = os.path.join(pkg_share, 'models/eced3901bot.urdf')
   robot_name_in_urdf = 'eced3901bot'
-  default_rviz_config_path = os.path.join(pkg_share, 'rviz/nav2_config.rviz')
+  default_rviz_config_path = os.path.join(pkg_share, 'rviz/nav2.rviz')
   nav2_dir = FindPackageShare(package='nav2_bringup').find('nav2_bringup') 
   nav2_launch_dir = os.path.join(nav2_dir, 'launch') 
-  static_map_path = os.path.join(pkg_share, 'maps', 'openwater_map')
+  static_map_path = os.path.join(pkg_share, 'maps', 'right_coast_map.yaml')
   nav2_params_path = os.path.join(pkg_share, 'params', 'nav2_params.yaml')
   nav2_bt_path = FindPackageShare(package='nav2_bt_navigator').find('nav2_bt_navigator')
+
+  # Changed to fix long thinking time issue
   behavior_tree_xml_path = os.path.join(nav2_bt_path, 'behavior_trees', 'navigate_w_replanning_and_recovery.xml')
   
   # Launch configuration variables specific to simulation
@@ -95,7 +97,7 @@ def generate_launch_description():
 
   declare_slam_cmd = DeclareLaunchArgument(
     name='slam',
-    default_value='True',
+    default_value='False',
     description='Whether to run SLAM')
     
   declare_use_rviz_cmd = DeclareLaunchArgument(
@@ -105,9 +107,8 @@ def generate_launch_description():
     
   declare_use_sim_time_cmd = DeclareLaunchArgument(
     name='use_sim_time',
-    default_value='True',
+    default_value='False',
     description='Use simulation (Gazebo) clock if true')
-
    
   # Specify the actions
 
@@ -132,29 +133,14 @@ def generate_launch_description():
                         'default_bt_xml_filename': default_bt_xml_filename,
                         'autostart': autostart}.items())
 
-  ####################################################
-  # Students have to add their DT1 code
-  start_dt1 = Node(
+  
+  # Launch WP follower
+  start_wpfollow = Node(
+    condition=IfCondition(use_rviz),
     package='eced3901',
-    executable='dt1',
-    name='dt1_square',
+    executable='right_coast.py',
+    name='wp_follower',
     output='screen') 
-     
-  delayed_dt1 = TimerAction(period=10.0,
-            actions=[start_dt1])
-  
-  
-  start_mapsave = Node(
-    package='nav2_map_server',
-    executable='map_saver_cli',
-    name='map_saver',
-    output='screen',
-    arguments=['-f', map_yaml_file]
-    ) 
-     
-  delayed_mapsave = TimerAction(period=80.0,
-            actions=[start_mapsave])
-  ####################################################
   
   
   # Create the launch description and populate
@@ -177,8 +163,6 @@ def generate_launch_description():
   # Add any actions
   ld.add_action(start_rviz_cmd)
   ld.add_action(start_ros2_navigation_cmd)
-  ld.add_action(delayed_dt1)
-  ld.add_action(delayed_mapsave)
-  
+  ld.add_action(start_wpfollow)
   
   return ld

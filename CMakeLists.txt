@@ -47,6 +47,11 @@ install(PROGRAMS
 #  scripts/wp_follower.py
   scripts/demo_inspection.py
   scripts/team_qualification_nav.py
+  scripts/right_coast.py
+  scripts/left_coast.py
+  scripts/switch.py
+  scripts/right_open.py
+  scripts/left_open.py
   DESTINATION lib/${PROJECT_NAME})
 
 
